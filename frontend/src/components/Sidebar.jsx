@@ -1,4 +1,4 @@
-import { LayoutDashboard, Ticket, Settings, BarChart3, Building2, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Ticket, Settings, BarChart3, Building2, Users, LogOut, History } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,7 @@ const Sidebar = () => {
         { icon: Building2, label: 'Empresas', path: '/companies', roles: ['superadmin'] },
         { icon: Users, label: 'Usuarios', path: '/users', roles: ['company_admin', 'superadmin'] },
         { icon: Ticket, label: 'Incidentes', path: '/incidents', roles: ['superadmin', 'company_admin', 'agent', 'client'] },
+        { icon: History, label: 'Historial', path: '/history', roles: ['superadmin', 'company_admin', 'agent', 'client'] },
         { icon: Settings, label: 'Configuración', path: '/settings', roles: ['superadmin', 'company_admin'] },
     ];
 

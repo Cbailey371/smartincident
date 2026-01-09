@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Paperclip, Clock, Tag, User, Save, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Clock, Tag, User, Save, CheckCircle, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const IncidentDetailPage = () => {
@@ -19,6 +19,13 @@ const IncidentDetailPage = () => {
     // Editing State
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({});
+
+    // Image Preview State
+    const [previewImage, setPreviewImage] = useState(null);
+
+    // Close Ticket State
+    const [showCloseModal, setShowCloseModal] = useState(false);
+    const [closeComment, setCloseComment] = useState('');
 
     useEffect(() => {
         fetchIncident();
@@ -116,6 +123,44 @@ const IncidentDetailPage = () => {
         }
     };
 
+    const handleCloseTicket = async () => {
+        if (!closeComment.trim()) return;
+
+        try {
+            const userInfo = localStorage.getItem('userInfo');
+            const token = userInfo ? JSON.parse(userInfo).token : null;
+
+            // 1. Post Closing Comment
+            await fetch(`http://localhost:3000/api/incidents/${id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ content: `[CIERRE] ${closeComment}` })
+            });
+
+            // 2. Update Status to Closed
+            const res = await fetch(`http://localhost:3000/api/incidents/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: 'closed' })
+            });
+
+            if (res.ok) {
+                setShowCloseModal(false);
+                setCloseComment('');
+                fetchIncident();
+                fetchComments();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleUpdateIncident = async () => {
         try {
             const userInfo = localStorage.getItem('userInfo');
@@ -195,9 +240,65 @@ const IncidentDetailPage = () => {
                             </button>
                         </div>
                     )}
+
+                    {/* Close Ticket Button (Visible to everyone involved if open) */}
+                    {!isEditing && incident.status !== 'closed' && incident.status !== 'resolved' && (
+                        <button
+                            onClick={() => setShowCloseModal(true)}
+                            className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-600 border border-red-600/20 rounded-lg font-medium transition-colors"
+                        >
+                            Cerrar Ticket
+                        </button>
+                    )}
                 </div>
 
                 <p className="text-text-muted mb-6 whitespace-pre-wrap">{incident.description}</p>
+
+                {/* Attachments Section */}
+                {incident.Attachments && incident.Attachments.length > 0 && (
+                    <div className="mb-6 p-4 bg-background/30 rounded-xl border border-border-color/50">
+                        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Paperclip className="w-3 h-3" /> Archivos Adjuntos
+                        </h3>
+                        <div className="flex flex-wrap gap-4">
+                            {incident.Attachments.filter(att => !att.comment_id).map(att => {
+                                const isImage = att.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                return (
+                                    <div key={att.id} className="group relative">
+                                        {/* Debug Log */ console.log('Attachment Path:', att.file_path)}
+                                        {isImage ? (
+                                            <div
+                                                onClick={() => setPreviewImage(`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`)}
+                                                className="cursor-pointer transition-transform hover:scale-105"
+                                            >
+                                                <img
+                                                    src={`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`}
+                                                    alt={att.original_name}
+                                                    className="w-24 h-24 object-cover rounded-lg border border-border-color shadow-sm group-hover:shadow-md"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <a
+                                                href={`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`}
+
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block transition-transform hover:scale-105"
+                                            >
+                                                <div className="w-24 h-24 flex flex-col items-center justify-center bg-background border border-border-color rounded-lg group-hover:bg-primary/5 transition-colors">
+                                                    <Paperclip className="w-6 h-6 text-text-muted group-hover:text-primary mb-1" />
+                                                    <span className="text-[10px] text-text-muted px-2 text-center truncate w-full">
+                                                        {att.original_name}
+                                                    </span>
+                                                </div>
+                                            </a>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Info Bar */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm p-4 bg-background/50 rounded-xl border border-border-color">
@@ -300,19 +401,39 @@ const IncidentDetailPage = () => {
                                         </div>
                                         <div className="text-text-main text-sm bg-background/50 p-3 rounded-lg rounded-tl-none border border-border-color">
                                             {comment.content}
-                                            {comment.attachments && comment.attachments.map(att => (
-                                                <div key={att.id} className="mt-2 pt-2 border-t border-border-color/50">
-                                                    <a
-                                                        href={`http://localhost:3000/${att.file_path}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs"
-                                                    >
-                                                        <Paperclip className="w-3 h-3" />
-                                                        {att.original_name || 'Adjunto'}
-                                                    </a>
+                                            {comment.attachments && comment.attachments.length > 0 && (
+                                                <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                                    {comment.attachments.map(att => {
+                                                        const isImage = att.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                                        return (
+                                                            <div key={att.id}>
+                                                                {isImage ? (
+                                                                    <div
+                                                                        onClick={() => setPreviewImage(`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`)}
+                                                                        className="cursor-pointer group"
+                                                                    >
+                                                                        <img
+                                                                            src={`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`}
+                                                                            alt={att.original_name}
+                                                                            className="w-full h-24 object-cover rounded-lg border border-border-color group-hover:opacity-90 transition-opacity"
+                                                                        />
+                                                                    </div>
+                                                                ) : (
+                                                                    <a
+                                                                        href={`http://localhost:3000/${att.file_path.replace(/\\/g, '/')}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs p-2 bg-background/50 rounded border border-border-color/50"
+                                                                    >
+                                                                        <Paperclip className="w-3 h-3" />
+                                                                        <span className="truncate">{att.original_name || 'Adjunto'}</span>
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -363,7 +484,67 @@ const IncidentDetailPage = () => {
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Close Ticket Modal */}
+
+            {/* Close Ticket Modal */}
+            {showCloseModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-surface border border-border-color p-6 rounded-2xl w-full max-w-md shadow-2xl">
+                        <h3 className="text-xl font-bold text-text-main mb-4">Cerrar Ticket</h3>
+                        <p className="text-text-muted mb-4 text-sm">
+                            Por favor, indica el motivo del cierre o un comentario final. Este comentario es obligatorio.
+                        </p>
+                        <textarea
+                            value={closeComment}
+                            onChange={(e) => setCloseComment(e.target.value)}
+                            className="w-full bg-background border border-border-color rounded-lg p-3 text-text-main focus:ring-2 focus:ring-primary focus:outline-none mb-6 min-h-[100px]"
+                            placeholder="Escribe tu comentario aquí..."
+                        />
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowCloseModal(false)}
+                                className="px-4 py-2 text-text-muted hover:text-text-main"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleCloseTicket}
+                                disabled={!closeComment.trim()}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                            >
+                                Cerrar Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Preview Modal */}
+            {
+                previewImage && (
+                    <div
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        <div className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center">
+                            <button
+                                onClick={() => setPreviewImage(null)}
+                                className="absolute -top-10 right-0 text-white hover:text-gray-300"
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+                            <img
+                                src={previewImage}
+                                alt="Preview"
+                                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                                onClick={(e) => e.stopPropagation()} // Prevent close on image click
+                            />
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

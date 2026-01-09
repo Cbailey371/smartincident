@@ -78,7 +78,7 @@ const IncidentListPage = () => {
         try {
             const userInfo = localStorage.getItem('userInfo');
             const token = userInfo ? JSON.parse(userInfo).token : null;
-            const res = await fetch('http://localhost:3000/api/incidents', {
+            const res = await fetch('http://localhost:3000/api/incidents?status=open,in_progress,resolved', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -287,7 +287,6 @@ const IncidentListPage = () => {
                                 <option value="open">Abierto</option>
                                 <option value="in_progress">En Progreso</option>
                                 <option value="resolved">Resuelto</option>
-                                <option value="closed">Cerrado</option>
                             </select>
                         </div>
                         <div className="space-y-1">

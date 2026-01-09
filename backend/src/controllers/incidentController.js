@@ -52,28 +52,46 @@ exports.getAllIncidents = async (req, res) => {
         // Multi-tenancy Filtering
         if (req.user.role === 'superadmin') {
             // Can see all. Optionally filter by company_id query param
-            if (req.query.company_id) whereClause.company_id = req.query.company_id;
+            if (req.query.company_id && req.query.company_id !== 'all') whereClause.company_id = req.query.company_id;
         }
         else if (req.user.role === 'company_admin') {
             whereClause.company_id = req.user.company_id;
         }
         else if (req.user.role === 'client') {
-            // Clients see only their own tickets? Or all company tickets?
-            // Usually User req: "admin de empresas... puedan colocar tickeck"
-            // Let's assume clients see ONLY their tickets for now, or Company Admin sees All.
             whereClause.reporter_id = req.user.id;
         }
         else if (req.user.role === 'agent') {
-            // Agents see tickets assigned to them OR from companies they support using include
-            // For simplicity now: All tickets where they are assignee
-            // OR where company is in their supported list.
-            // Complex query. For MVP: See All Assigned to Me
             whereClause = {
                 [Op.or]: [
                     { assignee_id: req.user.id },
-                    // { company_id: [Array of supported IDs] } // TODO: Implement robust agent visibility
+                    // { company_id: [Array of supported IDs] } 
                 ]
             };
+        }
+
+        // Common Filters (applied on top of role restrictions)
+        if (req.query.status && req.query.status !== 'all') {
+            if (req.query.status.includes(',')) {
+                whereClause.status = { [Op.in]: req.query.status.split(',') };
+            } else {
+                whereClause.status = req.query.status;
+            }
+        }
+
+        if (req.query.priority && req.query.priority !== 'all') {
+            whereClause.priority = req.query.priority;
+        }
+
+        if (req.query.assignee_id && req.query.assignee_id !== 'all') {
+            // Ensure we don't override role-based assignee restrictions blindly, 
+            // but for now, intersecting role restrictions with query params is complex.
+            // Simplified: If user is superadmin/company_admin, they can filter by assignee.
+            // If agent, they usually see their own, so filtering by another assignee might result in empty.
+            whereClause.assignee_id = req.query.assignee_id;
+        }
+
+        if (req.query.ticket_code) {
+            whereClause.ticket_code = { [Op.like]: `%${req.query.ticket_code}%` };
         }
 
         const incidents = await Incident.findAll({
@@ -98,7 +116,8 @@ exports.getIncidentById = async (req, res) => {
             include: [
                 { model: User, as: 'reporter', attributes: ['name', 'email'] },
                 { model: User, as: 'assignee', attributes: ['name', 'email'] },
-                { model: Company, as: 'company', attributes: ['name'] }
+                { model: Company, as: 'company', attributes: ['name'] },
+                { model: Attachment }
             ]
         });
 

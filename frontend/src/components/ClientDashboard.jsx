@@ -91,7 +91,7 @@ const ClientDashboard = () => {
                     ) : (
                         recentTickets.map(ticket => (
                             <motion.div
-                                Key={ticket.id}
+                                key={ticket.id}
                                 variants={itemVariants}
                                 className="p-4 hover:bg-background/30 transition-colors flex items-center justify-between group"
                             >

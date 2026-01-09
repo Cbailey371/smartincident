@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import CompanyListPage from './pages/CompanyListPage';
 import UserListPage from './pages/UserListPage';
 import IncidentListPage from './pages/IncidentListPage';
+import HistoryPage from './pages/HistoryPage';
 import IncidentDetailPage from './pages/IncidentDetailPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
@@ -39,6 +40,7 @@ function App() {
               <Route path="users" element={<UserListPage />} />
               <Route path="incidents" element={<IncidentListPage />} />
               <Route path="incidents/:id" element={<IncidentDetailPage />} />
+              <Route path="history" element={<HistoryPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<div className="text-white">404 Not Found</div>} />
             </Route>

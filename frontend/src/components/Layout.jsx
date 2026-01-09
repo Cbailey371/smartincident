@@ -17,7 +17,7 @@ const Layout = () => {
     };
 
     return (
-        <div className="flex bg-background min-h-screen font-sans">
+        <div className="flex bg-background h-screen font-sans overflow-hidden">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header title={getTitle()} />
