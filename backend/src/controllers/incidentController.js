@@ -44,7 +44,11 @@ exports.createIncident = async (req, res) => {
         // Wrap in try-catch to ensure Incident creation succeeds even if notifications fail
         try {
             const reporter = await User.findByPk(reporter_id);
-            console.log(`[CreateIncident] Reporter found: ${reporter ? reporter.email : 'No'}`);
+            let companyName = 'Global';
+            if (company_id) {
+                const company = await Company.findByPk(company_id);
+                if (company) companyName = company.name;
+            }
 
             // 1. Notify Reporter (Client)
             if (reporter && reporter.email) {
@@ -55,20 +59,18 @@ exports.createIncident = async (req, res) => {
                         text: `Hemos recibido tu incidencia. Código: ${ticket_code}. Un agente la revisará pronto.`,
                         html: `<h3>Ticket Registrado</h3><p>Tu incidencia <strong>${ticket_code}</strong> ha sido creada exitosamente.</p><p>Título: ${title}</p>`
                     });
-                    console.log(`[CreateIncident] Email sent to reporter: ${reporter.email}`);
                 } catch (err) {
                     console.error(`[CreateIncident] Failed to email reporter:`, err);
                 }
             }
 
             // 2. Notify Superadmin (and Assignee if exists)
-            // Use Op.or for safer case handling instead of iLike which might be dialect specific
+            // Use Op.or for safer case handling
             const admins = await User.findAll({
                 where: {
                     role: { [Op.or]: ['superadmin', 'Superadmin', 'SuperAdmin'] }
                 }
             });
-            console.log(`[CreateIncident] Found ${admins.length} superadmins to notify.`);
 
             for (const admin of admins) {
                 if (admin.email) {
@@ -76,15 +78,18 @@ exports.createIncident = async (req, res) => {
                         await sendEmail({
                             to: admin.email,
                             subject: `[Nuevo Ticket] ${ticket_code} - ${title}`,
-                            text: `Nuevo ticket creado por ${reporter?.name || 'Usuario'}. Prioridad: ${priority}.`,
-                            html: `<p>Se ha creado un nuevo ticket en el sistema.</p><p><strong>Creado por:</strong> ${reporter?.name}</p><p><strong>Título:</strong> ${title}</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
+                            text: `Nuevo ticket creado por ${reporter?.name || 'Usuario'}.\nEmpresa: ${companyName}\nTítulo: ${title}`,
+                            html: `
+                                <p>Se ha creado un nuevo ticket en el sistema.</p>
+                                <p><strong>Creado por:</strong> ${reporter?.name || 'Usuario'}</p>
+                                <p><strong>Empresa:</strong> ${companyName}</p>
+                                <p><strong>Título:</strong> ${title}</p>
+                                <p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>
+                            `
                         });
-                        console.log(`[CreateIncident] Email sent to admin: ${admin.email}`);
                     } catch (err) {
                         console.error(`[CreateIncident] Failed to email admin ${admin.email}:`, err);
                     }
-                } else {
-                    console.log(`[CreateIncident] Admin ${admin.id} has no email.`);
                 }
             }
 
@@ -98,12 +103,9 @@ exports.createIncident = async (req, res) => {
                             text: `Se te ha asignado el ticket ${ticket_code}.`,
                             html: `<p>Se te ha asignado un nuevo ticket.</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
                         });
-                        console.log(`[CreateIncident] Email sent to assignee: ${assignee.email}`);
                     } catch (err) {
                         console.error(`[CreateIncident] Failed to email assignee:`, err);
                     }
-                } else {
-                    console.log(`[CreateIncident] Assignee ${assignee_id} not found or no email.`);
                 }
             }
         } catch (notificationError) {
