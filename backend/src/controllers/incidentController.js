@@ -41,67 +41,74 @@ exports.createIncident = async (req, res) => {
         }
 
         // NOTIFICATIONS
-        const reporter = await User.findByPk(reporter_id);
-        console.log(`[CreateIncident] Reporter found: ${reporter ? reporter.email : 'No'}`);
+        // Wrap in try-catch to ensure Incident creation succeeds even if notifications fail
+        try {
+            const reporter = await User.findByPk(reporter_id);
+            console.log(`[CreateIncident] Reporter found: ${reporter ? reporter.email : 'No'}`);
 
-        // 1. Notify Reporter (Client)
-        if (reporter && reporter.email) {
-            try {
-                await sendEmail({
-                    to: reporter.email,
-                    subject: `Ticket Creado: ${ticket_code} - ${title}`,
-                    text: `Hemos recibido tu incidencia. Código: ${ticket_code}. Un agente la revisará pronto.`,
-                    html: `<h3>Ticket Registrado</h3><p>Tu incidencia <strong>${ticket_code}</strong> ha sido creada exitosamente.</p><p>Título: ${title}</p>`
-                });
-                console.log(`[CreateIncident] Email sent to reporter: ${reporter.email}`);
-            } catch (err) {
-                console.error(`[CreateIncident] Failed to email reporter:`, err);
-            }
-        }
-
-        // 2. Notify Superadmin (and Assignee if exists)
-        // Ideally filter actual admins, for now hardcoded superadmin for demo
-        // Use iLike for case-insensitive role match to be safe
-        const admins = await User.findAll({ where: { role: { [Op.iLike]: 'superadmin' } } });
-        console.log(`[CreateIncident] Found ${admins.length} superadmins to notify.`);
-
-        for (const admin of admins) {
-            if (admin.email) {
+            // 1. Notify Reporter (Client)
+            if (reporter && reporter.email) {
                 try {
                     await sendEmail({
-                        to: admin.email,
-                        subject: `[Nuevo Ticket] ${ticket_code} - ${title}`,
-                        text: `Nuevo ticket creado por ${reporter?.name || 'Usuario'}. Prioridad: ${priority}.`,
-                        html: `<p>Se ha creado un nuevo ticket en el sistema.</p><p><strong>Creado por:</strong> ${reporter?.name}</p><p><strong>Título:</strong> ${title}</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
+                        to: reporter.email,
+                        subject: `Ticket Creado: ${ticket_code} - ${title}`,
+                        text: `Hemos recibido tu incidencia. Código: ${ticket_code}. Un agente la revisará pronto.`,
+                        html: `<h3>Ticket Registrado</h3><p>Tu incidencia <strong>${ticket_code}</strong> ha sido creada exitosamente.</p><p>Título: ${title}</p>`
                     });
-                    console.log(`[CreateIncident] Email sent to admin: ${admin.email}`);
+                    console.log(`[CreateIncident] Email sent to reporter: ${reporter.email}`);
                 } catch (err) {
-                    console.error(`[CreateIncident] Failed to email admin ${admin.email}:`, err);
+                    console.error(`[CreateIncident] Failed to email reporter:`, err);
                 }
-            } else {
-                console.log(`[CreateIncident] Admin ${admin.id} has no email.`);
             }
-        }
 
-        if (assignee_id) {
-            const assignee = await User.findByPk(assignee_id);
-            if (assignee && assignee.email) {
-                try {
-                    await sendEmail({
-                        to: assignee.email,
-                        subject: `[Asignado] Ticket ${ticket_code}`,
-                        text: `Se te ha asignado el ticket ${ticket_code}.`,
-                        html: `<p>Se te ha asignado un nuevo ticket.</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
-                    });
-                    console.log(`[CreateIncident] Email sent to assignee: ${assignee.email}`);
-                } catch (err) {
-                    console.error(`[CreateIncident] Failed to email assignee:`, err);
+            // 2. Notify Superadmin (and Assignee if exists)
+            // Use Op.or for safer case handling instead of iLike which might be dialect specific
+            const admins = await User.findAll({
+                where: {
+                    role: { [Op.or]: ['superadmin', 'Superadmin', 'SuperAdmin'] }
                 }
-            } else {
-                console.log(`[CreateIncident] Assignee ${assignee_id} not found or no email.`);
+            });
+            console.log(`[CreateIncident] Found ${admins.length} superadmins to notify.`);
+
+            for (const admin of admins) {
+                if (admin.email) {
+                    try {
+                        await sendEmail({
+                            to: admin.email,
+                            subject: `[Nuevo Ticket] ${ticket_code} - ${title}`,
+                            text: `Nuevo ticket creado por ${reporter?.name || 'Usuario'}. Prioridad: ${priority}.`,
+                            html: `<p>Se ha creado un nuevo ticket en el sistema.</p><p><strong>Creado por:</strong> ${reporter?.name}</p><p><strong>Título:</strong> ${title}</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
+                        });
+                        console.log(`[CreateIncident] Email sent to admin: ${admin.email}`);
+                    } catch (err) {
+                        console.error(`[CreateIncident] Failed to email admin ${admin.email}:`, err);
+                    }
+                } else {
+                    console.log(`[CreateIncident] Admin ${admin.id} has no email.`);
+                }
             }
-        } else {
-            console.log(`[CreateIncident] No assignee_id provided.`);
+
+            if (assignee_id) {
+                const assignee = await User.findByPk(assignee_id);
+                if (assignee && assignee.email) {
+                    try {
+                        await sendEmail({
+                            to: assignee.email,
+                            subject: `[Asignado] Ticket ${ticket_code}`,
+                            text: `Se te ha asignado el ticket ${ticket_code}.`,
+                            html: `<p>Se te ha asignado un nuevo ticket.</p><p><a href="https://smartincident.cbtechpty.com/incidents/${incident.id}">Ver Ticket</a></p>`
+                        });
+                        console.log(`[CreateIncident] Email sent to assignee: ${assignee.email}`);
+                    } catch (err) {
+                        console.error(`[CreateIncident] Failed to email assignee:`, err);
+                    }
+                } else {
+                    console.log(`[CreateIncident] Assignee ${assignee_id} not found or no email.`);
+                }
+            }
+        } catch (notificationError) {
+            console.error('[CreateIncident] CRITICAL NOTIFICATION ERROR:', notificationError);
+            // Do NOT throw here, so the client still gets the 201 Created response
         }
 
         res.status(201).json(incident);
