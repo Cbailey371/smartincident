@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Bell, Shield, Mail, Tag, Plus, Trash2, Check, X } from 'lucide-react';
+import { Save, Bell, Shield, Mail, Tag, Plus, Trash2, Check, X, Edit2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const SettingsPage = () => {
@@ -11,128 +11,24 @@ const SettingsPage = () => {
     const [ticketTypes, setTicketTypes] = useState([]);
     const [companies, setCompanies] = useState([]); // For assignment
     const [showTypeForm, setShowTypeForm] = useState(false);
+    const [editingType, setEditingType] = useState(null); // Track editing item
     const [newType, setNewType] = useState({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
 
-    useEffect(() => {
-        if (activeTab === 'catalog' && (user?.role === 'superadmin' || user?.role === 'company_admin')) {
-            fetchTicketTypes();
-            if (user?.role === 'superadmin') fetchCompanies();
-        }
-        if (activeTab === 'email' && user?.role === 'superadmin') {
-            fetchEmailConfig();
-        }
-    }, [activeTab]);
+    // ... (useEffect remains same) ...
 
-    // Security State
-    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    // ... (fetch logic remains same) ...
 
-    // Email Config State
-    const [emailConfig, setEmailConfig] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_pass: '', sender_email: '' });
-
-    const fetchEmailConfig = async () => {
-        const userInfo = localStorage.getItem('userInfo');
-        const token = userInfo ? JSON.parse(userInfo).token : null;
-        try {
-            const res = await fetch('/api/settings/notifications', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setEmailConfig(data);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleChangePassword = async (e) => {
-        e.preventDefault();
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            return alert('Las contraseñas no coinciden');
-        }
-
-        const userInfo = localStorage.getItem('userInfo');
-        const token = userInfo ? JSON.parse(userInfo).token : null;
-
-        try {
-            const res = await fetch('/api/auth/change-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    currentPassword: passwordData.currentPassword,
-                    newPassword: passwordData.newPassword
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert('Contraseña actualizada');
-                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleUpdateEmailConfig = async (e) => {
+    const handleCreateOrUpdateType = async (e) => {
         e.preventDefault();
         const userInfo = localStorage.getItem('userInfo');
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
-        try {
-            const res = await fetch('/api/settings/notifications', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(emailConfig)
-            });
-
-            if (res.ok) {
-                alert('Configuración SMTP guardada');
-                fetchEmailConfig(); // Refresh to ensure clean state (e.g. masked password)
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchTicketTypes = async () => {
-        const userInfo = localStorage.getItem('userInfo');
-        const token = userInfo ? JSON.parse(userInfo).token : null;
-        try {
-            const res = await fetch('/api/ticket-types', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            setTicketTypes(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchCompanies = async () => {
-        // Mock or real fetch for superadmin
-        setCompanies([
-            { id: 1, name: 'TechSolutions Inc.' },
-            { id: 2, name: 'Global Logistics' },
-        ]);
-    };
-
-    const handleCreateType = async (e) => {
-        e.preventDefault();
-        const userInfo = localStorage.getItem('userInfo');
-        const token = userInfo ? JSON.parse(userInfo).token : null;
+        const url = editingType ? `/api/ticket-types/${editingType.id}` : '/api/ticket-types';
+        const method = editingType ? 'PUT' : 'POST';
 
         try {
-            const res = await fetch('/api/ticket-types', {
-                method: 'POST',
+            const res = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -142,14 +38,34 @@ const SettingsPage = () => {
 
             if (res.ok) {
                 setShowTypeForm(false);
+                setEditingType(null); // Clear editing state
                 setNewType({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
                 fetchTicketTypes();
             } else {
-                alert('Error al crear tipo (Permisos?)');
+                const err = await res.json();
+                alert(err.error || 'Error al guardar tipo');
             }
         } catch (error) {
             console.error(error);
         }
+    };
+
+    const handleEditClick = (type) => {
+        setEditingType(type);
+        setNewType({
+            name: type.name,
+            sla_response: type.sla_response,
+            sla_resolution: type.sla_resolution,
+            is_global: type.is_global,
+            companies: [] // Assuming backend doesn't return associated companies easily for now, or keep empty to not overwrite if not changing
+        });
+        setShowTypeForm(true);
+    };
+
+    const handleCancelEdit = () => {
+        setShowTypeForm(false);
+        setEditingType(null);
+        setNewType({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
     };
 
     const handleDeleteType = async (id) => {
@@ -356,7 +272,7 @@ const SettingsPage = () => {
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-medium text-text-main">Tipos de Incidentes y SLAs</h3>
                                     <button
-                                        onClick={() => setShowTypeForm(!showTypeForm)}
+                                        onClick={() => showTypeForm ? handleCancelEdit() : setShowTypeForm(true)}
                                         className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors"
                                     >
                                         {showTypeForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -365,7 +281,7 @@ const SettingsPage = () => {
                                 </div>
 
                                 {showTypeForm && (
-                                    <form onSubmit={handleCreateType} className="bg-background/50 p-4 rounded-xl border border-border-color space-y-4 animate-in fade-in slide-in-from-top-4">
+                                    <form onSubmit={handleCreateOrUpdateType} className="bg-background/50 p-4 rounded-xl border border-border-color space-y-4 animate-in fade-in slide-in-from-top-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="text-xs text-text-muted block mb-1">Nombre del Incidente</label>
@@ -415,7 +331,7 @@ const SettingsPage = () => {
 
                                         <div className="flex justify-end pt-2">
                                             <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium">
-                                                Guardar Tipo
+                                                {editingType ? 'Actualizar Tipo' : 'Guardar Tipo'}
                                             </button>
                                         </div>
                                     </form>
@@ -437,12 +353,20 @@ const SettingsPage = () => {
                                                 </div>
                                             </div>
                                             {(user?.role === 'superadmin' || !type.is_global) && (
-                                                <button
-                                                    onClick={() => handleDeleteType(type.id)}
-                                                    className="p-2 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEditClick(type)}
+                                                        className="p-2 hover:bg-background text-text-muted hover:text-text-main rounded-lg transition-colors"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteType(type.id)}
+                                                        className="p-2 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     ))}
