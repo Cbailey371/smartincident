@@ -17,8 +17,24 @@ exports.login = async (req, res) => {
 
     try {
         const user = await User.findOne({ where: { email } });
+        console.log(`[LOGIN DEBUG] Attempt for ${email}`);
 
-        if (user && user.password_hash && (await bcrypt.compare(password, user.password_hash))) {
+        if (!user) {
+            console.log("[LOGIN DEBUG] User not found");
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        console.log(`[LOGIN DEBUG] User found: ${user.id}, Role: ${user.role}, HashExists: ${!!user.password_hash}`);
+
+        if (!user.password_hash) {
+            console.log("[LOGIN DEBUG] No password hash found");
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        console.log(`[LOGIN DEBUG] Password match: ${isMatch}`);
+
+        if (isMatch) {
             res.json({
                 id: user.id,
                 name: user.name,
@@ -28,6 +44,7 @@ exports.login = async (req, res) => {
                 token: generateToken(user.id),
             });
         } else {
+            console.log("[LOGIN DEBUG] Password mismatch");
             res.status(401).json({ error: 'Invalid email or password' });
         }
     } catch (error) {
