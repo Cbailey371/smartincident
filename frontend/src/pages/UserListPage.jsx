@@ -96,6 +96,8 @@ const UserListPage = () => {
             // Auto-assign company for Company Admins
             if (user?.role === 'company_admin') {
                 payload.company_id = user.company_id;
+            } else if (!payload.company_id) {
+                payload.company_id = null;
             }
 
             const res = await fetch(url, {
