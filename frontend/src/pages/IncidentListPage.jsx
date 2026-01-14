@@ -241,7 +241,7 @@ const IncidentListPage = () => {
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors shadow-lg shadow-primary/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium transition-colors shadow-lg shadow-primary/20 cursor-pointer"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Nuevo Incidente</span>
@@ -565,7 +565,7 @@ const IncidentListPage = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
+                                    className="flex items-center gap-2 px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors cursor-pointer"
                                 >
                                     <Save className="w-4 h-4" />
                                     Crear Ticket
