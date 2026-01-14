@@ -63,7 +63,7 @@ const ClientDashboard = () => {
                         className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-colors shadow-lg shadow-black/20"
                     >
                         <Plus className="w-5 h-5" />
-                        Crear Nuevo Ticket
+                        Nuevo Incidente
                     </Link>
                 </div>
                 {/* Decorative Pattern */}
