@@ -37,9 +37,9 @@ const LoginPage = () => {
             <div className="w-full max-w-md bg-surface border border-border-color rounded-2xl p-8 shadow-2xl transition-colors duration-200">
                 <div className="text-center mb-8">
                     <div className="mx-auto flex items-center justify-center mb-6">
-                        <img src="/logo.jpg" alt="CBTECH Logo" className="h-16 object-contain" />
+                        <img src="/logo.png" alt="SMARTINCIDENT Logo" className="h-16 object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold text-text-main mb-2">CBTECH TICKETS</h1>
+                    <h1 className="text-2xl font-bold text-text-main mb-2">SMARTINCIDENT</h1>
                     <p className="text-text-muted text-sm">Ingresa tus credenciales para continuar</p>
                 </div>
 
@@ -93,6 +93,11 @@ const LoginPage = () => {
                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Iniciar Sesión'}
                     </button>
                 </form>
+            </div>
+            <div className="absolute bottom-6 left-0 right-0 text-center">
+                <p className="text-[10px] text-text-muted font-medium tracking-widest uppercase">
+                    v1.0.0 (Build 2026.01.14) - © 2026 CBTECH Consulting Solutions Systems. Todos los derechos reservados.
+                </p>
             </div>
         </div>
     );

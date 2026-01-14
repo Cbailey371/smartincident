@@ -19,7 +19,7 @@ const Sidebar = () => {
     return (
         <div className="w-64 h-screen bg-surface border-r border-border-color flex flex-col p-4 text-text-muted">
             <div className="flex items-center gap-3 px-4 py-6 mb-4 justify-center">
-                <img src="/logo.jpg" alt="CBTECH" className="h-16 object-contain" />
+                <img src="/logo.png" alt="SMARTINCIDENT" className="h-16 object-contain" />
             </div>
 
             <nav className="flex-1 space-y-2">

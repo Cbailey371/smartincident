@@ -8,24 +8,24 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.jpg', 'vite.svg'],
+      includeAssets: ['logo.png', 'vite.svg'],
       manifest: {
-        name: 'Tickets SaaS',
-        short_name: 'Tickets',
-        description: 'Sistema de Gestión de Incidentes',
+        name: 'SMARTINCIDENT',
+        short_name: 'SMARTINCIDENT',
+        description: 'Sistema de Gestión de Incidentes SMARTINCIDENT',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
         icons: [
           {
-            src: 'logo.jpg',
+            src: 'logo.png',
             sizes: '192x192',
-            type: 'image/jpeg'
+            type: 'image/png'
           },
           {
-            src: 'logo.jpg',
+            src: 'logo.png',
             sizes: '512x512',
-            type: 'image/jpeg'
+            type: 'image/png'
           }
         ]
       }
