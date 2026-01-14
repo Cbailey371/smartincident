@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Filter, Plus, Search, MoreVertical, X, Save, AlertCircle, Upload, ChevronDown, ChevronUp, RefreshCw, Calendar, User, Building, Trash2 } from 'lucide-react';
 import Combobox from '../components/Combobox';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const IncidentListPage = () => {
     const { user } = useAuth();
+    const location = useLocation();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -46,7 +47,12 @@ const IncidentListPage = () => {
         if (['superadmin', 'company_admin'].includes(user?.role)) {
             fetchCompanies();
         }
-    }, [user]);
+
+        // Open Modal if coming from Dashboard shortcut
+        if (location.state?.openCreateModal) {
+            setShowModal(true);
+        }
+    }, [user, location.state]);
 
     const fetchUsers = async () => {
         try {
