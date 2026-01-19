@@ -1,0 +1,3 @@
+fn(axum::extract::State<AppState>, AuthUser, axum::extract::Query<IncidentQuery>) -> impl std::future::Future<Output = Result<axum::Json<Vec<models::incident::Model>>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {get_all_incidents}
+fn(axum::extract::State<AppState>, AuthUser, axum::extract::Query<IncidentQuery>) -> impl std::future::Future<Output = Result<axum::Json<Vec<models::incident::Model>>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {get_all_incidents}: Handler<_, _>
+axum::handler::Layered<L, H, T, S>

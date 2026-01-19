@@ -1,0 +1,1 @@
+sea_orm::Select<notification_config::Entity>

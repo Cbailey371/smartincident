@@ -1,0 +1,3 @@
+fn(axum::extract::State<AppState>, AuthUser, axum::extract::Path<i32>) -> impl std::future::Future<Output = Result<axum::Json<JsonValue>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {delete_incident}
+fn(axum::extract::State<AppState>, AuthUser, axum::extract::Path<i32>) -> impl std::future::Future<Output = Result<axum::Json<JsonValue>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {delete_incident}: Handler<_, _>
+axum::handler::Layered<L, H, T, S>

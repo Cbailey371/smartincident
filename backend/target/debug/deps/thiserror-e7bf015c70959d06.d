@@ -1,0 +1,12 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/deps/thiserror-e7bf015c70959d06.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/build/thiserror-3de24113c52611be/out/private.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/deps/libthiserror-e7bf015c70959d06.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/build/thiserror-3de24113c52611be/out/private.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs:
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/build/thiserror-3de24113c52611be/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/cbailey/Documents/Proyectos/tusociosmart/backend_rust/target/debug/build/thiserror-3de24113c52611be/out
