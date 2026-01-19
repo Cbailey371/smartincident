@@ -35,8 +35,8 @@ source $HOME/.cargo/env
 git clone https://github.com/Cbailey371/smartincident.git
 cd smartincident/backend
 
-# Crear archivo de entorno
-cat <<EOT >> .env
+# Crear archivo de entorno (usando tee para manejar permisos de sudo)
+sudo tee .env <<EOT
 DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/tusociosmart
 JWT_SECRET=$(openssl rand -base64 32)
 EOT
