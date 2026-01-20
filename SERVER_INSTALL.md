@@ -129,6 +129,21 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
+## 9. Permisos para Nginx (Archivos Estáticos y Adjuntos)
+Para que Nginx pueda servir las imágenes subidas y los archivos del frontend, necesita permisos de lectura.
+
+Ejecuta estos comandos:
+```bash
+# Asegurar que el usuario ubuntu sea el dueño
+sudo chown -R ubuntu:ubuntu /var/www/smartincident
+
+# Dar permisos de lectura y ejecución a otros (incluyendo www-data)
+sudo chmod -R 755 /var/www/smartincident
+
+# Opcional: Si tienes problemas con las imágenes, añade a www-data al grupo ubuntu
+sudo usermod -a -G ubuntu www-data
+```
+
 ---
 > [!IMPORTANT]
 > El puerto por defecto es el `5002`. Asegúrate de que los permisos de las carpetas `/backend/uploads` y `/frontend/dist` permitan la lectura a Nginx (`www-data`).
