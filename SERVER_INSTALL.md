@@ -1,6 +1,6 @@
-# Guía de Instalación del Servidor (Ubuntu)
+# Guía de Instalación del Servidor (Ubuntu) - Proyecto smartincident
 
-Esta guía detalla los pasos para realizar una instalación desde cero en un servidor Ubuntu para el proyecto **tusociosmart** con el nuevo backend en Rust.
+Esta guía detalla los pasos para realizar una instalación desde cero en un servidor Ubuntu para el proyecto **smartincident** con el backend optimizado en Rust.
 
 ## 1. Actualización del Sistema
 ```bash
@@ -19,12 +19,12 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Crear base de datos y usuario
-sudo -u postgres psql -c "CREATE DATABASE tusociosmart;"
+sudo -u postgres psql -c "CREATE DATABASE incident;"
 sudo -u postgres psql -c "CREATE USER smartuser WITH PASSWORD 'tu_password_seguro';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE tusociosmart TO smartuser;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE incident TO smartuser;"
 ```
 
-## 4. Instalación de Rust (para el Backend)
+## 4. Instalación de Rust
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
@@ -32,42 +32,74 @@ source $HOME/.cargo/env
 
 ## 5. Clonar y Configurar el Proyecto
 ```bash
+# Se recomienda instalar en /var/www/
+sudo mkdir -p /var/www
+sudo chown -R $USER:$USER /var/www
+cd /var/www
+
 git clone https://github.com/Cbailey371/smartincident.git
-# NOTA: Si GitHub pide contraseña, usa un "Personal Access Token" (PAT).
 cd smartincident/backend
 
-# Importante: Ajustar permisos para que el usuario ubuntu pueda trabajar
-sudo chown -R $USER:$USER /var/www/smartincident
-
-# Crear archivo de entorno (usando tee para manejar permisos de sudo)
+# Crear archivo de entorno (usando tee para manejar permisos de sudo si es necesario)
 sudo tee .env <<EOT
-DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/tusociosmart
+DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/incident
 JWT_SECRET=$(openssl rand -base64 32)
 EOT
 ```
 
-## 6. Compilación y Ejecución (Producción)
+## 6. Compilación
 ```bash
 # Compilar el binario optimizado
 cargo build --release
-
-# Ejecutar el backend (puedes usar systemd para que sea permanente)
-./target/release/smartincident-backend-rust
 ```
 
-## 7. Configuración de Nginx (Proxy Inverso)
+## 7. Configuración del Servicio (Backend Permanente)
+Para que el backend se ejecute en segundo plano y se reinicie solo, creamos un servicio de systemd.
+
+1. Crear el archivo:
+```bash
+sudo nano /etc/systemd/system/smartincident.service
+```
+
+2. Contenido del servicio:
+```ini
+[Unit]
+Description=Backend Rust para smartincident
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/var/www/smartincident/backend
+ExecStart=/var/www/smartincident/backend/target/release/smartincident-backend-rust
+Restart=always
+Environment=DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/incident
+Environment=JWT_SECRET=tu_secreto_aqui
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Activar y arrancar:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable smartincident
+sudo systemctl start smartincident
+```
+
+## 8. Configuración de Nginx (Proxy Inverso)
 ```bash
 sudo apt install -y nginx
-
-# Crear configuración de sitio
-sudo nano /etc/nginx/sites-available/tusociosmart
+sudo nano /etc/nginx/sites-available/smartincident
 ```
 
-**Contenido sugerido para Nginx:**
+**Configuración recomendada:**
 ```nginx
 server {
     listen 80;
-    server_name tu_dominio.com;
+    server_name smartincident.tusociosmart.com;
+
+    client_max_body_size 10M;
 
     location /api {
         proxy_pass http://localhost:5002;
@@ -90,10 +122,13 @@ server {
 }
 ```
 
-## 8. Seguridad Adicional (Opcional)
-- Configurar **UFW** (Firewall).
-- Instalar **Certbot** para HTTPS (SSL).
+Habilitar sitio:
+```bash
+sudo ln -s /etc/nginx/sites-available/smartincident /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
 
 ---
-> [!NOTE]
-> El backend en Rust está configurado por defecto para escuchar en el puerto `5002`. Asegúrate de que este puerto coincida en tu configuración de Nginx.
+> [!IMPORTANT]
+> El puerto por defecto es el `5002`. Asegúrate de que los permisos de las carpetas `/backend/uploads` y `/frontend/dist` permitan la lectura a Nginx (`www-data`).
