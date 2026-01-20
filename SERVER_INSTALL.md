@@ -30,7 +30,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 ```
 
-## 5. Clonar y Configurar el Proyecto
+## 5. Instalación de Node.js (para el Frontend)
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+## 6. Clonar y Configurar el Proyecto
 ```bash
 # Se recomienda instalar en /var/www/
 sudo mkdir -p /var/www
@@ -40,28 +46,23 @@ cd /var/www
 git clone https://github.com/Cbailey371/smartincident.git
 cd smartincident/backend
 
-# Crear archivo de entorno (usando tee para manejar permisos de sudo si es necesario)
+# Crear archivo de entorno para el backend
 sudo tee .env <<EOT
 DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/incident
 JWT_SECRET=$(openssl rand -base64 32)
 EOT
 ```
 
-## 6. Compilación
+## 7. Despliegue del Backend (Rust)
 ```bash
-# Compilar el binario optimizado
+# 1. Compilar el binario optimizado
 cargo build --release
-```
 
-## 7. Configuración del Servicio (Backend Permanente)
-Para que el backend se ejecute en segundo plano y se reinicie solo, creamos un servicio de systemd.
-
-1. Crear el archivo:
-```bash
+# 2. Configurar el servicio permanente
 sudo nano /etc/systemd/system/smartincident.service
 ```
 
-2. Contenido del servicio:
+*Contenido del servicio:*
 ```ini
 [Unit]
 Description=Backend Rust para smartincident
@@ -74,26 +75,37 @@ WorkingDirectory=/var/www/smartincident/backend
 ExecStart=/var/www/smartincident/backend/target/release/smartincident-backend-rust
 Restart=always
 Environment=DATABASE_URL=postgres://smartuser:tu_password_seguro@localhost/incident
-Environment=JWT_SECRET=tu_secreto_aqui
+Environment=JWT_SECRET=tu_secreto_generado
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-3. Activar y arrancar:
+*Activar:*
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable smartincident
 sudo systemctl start smartincident
 ```
 
-## 8. Configuración de Nginx (Proxy Inverso)
+## 8. Despliegue del Frontend
+```bash
+cd /var/www/smartincident/frontend
+
+# 1. Instalar dependencias
+npm install
+
+# 2. Compilar para producción (genera la carpeta /dist)
+npm run build
+```
+
+## 9. Configuración de Nginx
 ```bash
 sudo apt install -y nginx
 sudo nano /etc/nginx/sites-available/smartincident
 ```
 
-**Configuración recomendada:**
+*Configuración recomendada:*
 ```nginx
 server {
     listen 80;
@@ -122,28 +134,21 @@ server {
 }
 ```
 
-Habilitar sitio:
+*Habilitar:*
 ```bash
 sudo ln -s /etc/nginx/sites-available/smartincident /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## 9. Permisos para Nginx (Archivos Estáticos y Adjuntos)
-Para que Nginx pueda servir las imágenes subidas y los archivos del frontend, necesita permisos de lectura.
-
-Ejecuta estos comandos:
+## 10. Permisos Finales
 ```bash
-# Asegurar que el usuario ubuntu sea el dueño
+# Asegurar que Nginx (www-data) pueda leer los archivos
 sudo chown -R ubuntu:ubuntu /var/www/smartincident
-
-# Dar permisos de lectura y ejecución a otros (incluyendo www-data)
 sudo chmod -R 755 /var/www/smartincident
-
-# Opcional: Si tienes problemas con las imágenes, añade a www-data al grupo ubuntu
 sudo usermod -a -G ubuntu www-data
 ```
 
 ---
 > [!IMPORTANT]
-> El puerto por defecto es el `5002`. Asegúrate de que los permisos de las carpetas `/backend/uploads` y `/frontend/dist` permitan la lectura a Nginx (`www-data`).
+> El backend corre en el puerto `5002`. Si cambias la URL de la API en el frontend, recuerda actualizarla antes de ejecutar `npm run build`.
