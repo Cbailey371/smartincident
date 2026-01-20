@@ -52,7 +52,7 @@ EOT
 cargo build --release
 
 # Ejecutar el backend (puedes usar systemd para que sea permanente)
-./target/release/tusociosmart-backend-rust
+./target/release/smartincident-backend-rust
 ```
 
 ## 7. Configuración de Nginx (Proxy Inverso)
