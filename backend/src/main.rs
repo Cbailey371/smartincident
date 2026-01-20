@@ -5,6 +5,9 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use socketioxide::SocketIo;
 use tower_http::services::ServeDir;
 use crate::utils::sockets::on_connect;
+use sea_orm::*;
+use bcrypt::{hash, DEFAULT_COST};
+use chrono::Utc;
 
 mod config;
 mod models;
@@ -32,6 +35,10 @@ async fn main() {
 
     // Conectar a la base de datos
     let db = config::database::connect().await.expect("Failed to connect to database");
+    
+    // Inicializar Tablas y Admin
+    init_db(&db).await;
+
     let state = AppState { db };
 
     let cors = tower_http::cors::CorsLayer::new()
@@ -59,4 +66,50 @@ async fn main() {
     
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn init_db(db: &DatabaseConnection) {
+    let backend = db.get_database_backend();
+    let schema = Schema::new(backend);
+
+    // Lista de entidades para crear tablas
+    let stmts = vec![
+        schema.create_table_from_entity(models::company::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::user::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::ticket_type::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::incident::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::comment::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::attachment::Entity).if_not_exists().to_owned(),
+        schema.create_table_from_entity(models::notification_config::Entity).if_not_exists().to_owned(),
+    ];
+
+    for stmt in stmts {
+        let _ = db.execute(backend.build(&stmt)).await;
+    }
+
+    // Crear Admin por defecto
+    let email = "admin@smartincident.com";
+    let admin_exists = models::user::Entity::find()
+        .filter(models::user::Column::Email.eq(email))
+        .one(db)
+        .await
+        .unwrap_or(None);
+
+    if admin_exists.is_none() {
+        let password = "admin123";
+        let hashed = hash(password, DEFAULT_COST).unwrap();
+        
+        let admin = models::user::ActiveModel {
+            name: Set("Super Administrator".into()),
+            email: Set(email.into()),
+            role: Set("superadmin".into()),
+            password_hash: Set(Some(hashed)),
+            created_at: Set(Utc::now().naive_utc()),
+            updated_at: Set(Utc::now().naive_utc()),
+            ..Default::default()
+        };
+        
+        let _ = models::user::Entity::insert(admin).exec(db).await;
+        tracing::info!("Admin user created: {} / {}", email, password);
+    }
 }
