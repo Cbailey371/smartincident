@@ -33,7 +33,11 @@ source $HOME/.cargo/env
 ## 5. Clonar y Configurar el Proyecto
 ```bash
 git clone https://github.com/Cbailey371/smartincident.git
+# NOTA: Si GitHub pide contraseña, usa un "Personal Access Token" (PAT).
 cd smartincident/backend
+
+# Importante: Ajustar permisos para que el usuario ubuntu pueda trabajar
+sudo chown -R $USER:$USER /var/www/smartincident
 
 # Crear archivo de entorno (usando tee para manejar permisos de sudo)
 sudo tee .env <<EOT
