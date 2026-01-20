@@ -141,7 +141,28 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## 10. Permisos Finales
+## 10. Seguridad y SSL (HTTPS) con Certbot
+Para habilitar HTTPS de forma gratuita con Let's Encrypt:
+
+1. Instalar Certbot:
+```bash
+sudo apt install snapd
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+```
+
+2. Obtener y configurar el certificado para Nginx:
+```bash
+sudo certbot --nginx -d smartincident.tusociosmart.com
+```
+*Sigue las instrucciones en pantalla para redirigir todo el tráfico a HTTPS.*
+
+3. Verificar renovación automática:
+```bash
+sudo certbot renew --dry-run
+```
+
+## 11. Permisos Finales
 ```bash
 # Asegurar que Nginx (www-data) pueda leer los archivos
 sudo chown -R ubuntu:ubuntu /var/www/smartincident
