@@ -79,11 +79,11 @@ server {
     }
 
     location /uploads {
-        alias /ruta/a/smartincident/backend/uploads;
+        alias /var/www/smartincident/backend/uploads;
     }
 
     location / {
-        root /ruta/a/smartincident/frontend/dist;
+        root /var/www/smartincident/frontend/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
