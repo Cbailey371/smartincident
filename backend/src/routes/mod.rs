@@ -12,11 +12,9 @@ pub mod user;
 pub fn api_routes() -> Router<AppState> {
     Router::new()
         .nest("/auth", auth::routes())
-        .nest("/incidents", incident::routes())
+        .nest("/incidents", incident::routes().merge(comment::routes()))
         .nest("/companies", company::routes())
         .nest("/upload", upload::routes())
         .nest("/ticket-types", ticket_type::routes())
         .nest("/users", user::routes())
-        .nest("/incidents", comment::routes()) // This will handle /incidents/:id/comments
-        .nest("/incidents", incident::routes()) // Order matters? Axum combines them? Better to combine in incident.rs?
 }
