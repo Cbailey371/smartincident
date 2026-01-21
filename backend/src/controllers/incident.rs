@@ -27,7 +27,7 @@ pub async fn get_all_incidents(
     State(state): State<AppState>,
     user: AuthUser,
     Query(params): Query<IncidentQuery>,
-) -> Result<Json<Vec<incident::Model>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut query = incident::Entity::find();
 
     // Role-based filtering

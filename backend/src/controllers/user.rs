@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{user, company};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 use bcrypt::{hash, DEFAULT_COST};
 
@@ -48,7 +48,7 @@ pub async fn create_user(
     State(state): State<AppState>,
     user_auth: AuthUser,
     Json(payload): Json<CreateUserRequest>,
-) -> Result<(StatusCode, Json<user::Model>), (StatusCode, Json<Value>)> {
+) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
     if user_auth.user.role != "superadmin" {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Only superadmin can create users"}))));
     }
@@ -124,7 +124,7 @@ pub async fn update_user(
     user_auth: AuthUser,
     Path(id): Path<i32>,
     Json(payload): Json<CreateUserRequest>,
-) -> Result<Json<user::Model>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     if user_auth.user.role != "superadmin" && user_auth.user.id != id {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
