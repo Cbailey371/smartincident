@@ -124,9 +124,9 @@ const IncidentListPage = () => {
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('priority', formData.priority);
-        data.append('type_id', parseInt(formData.type_id));
+        data.append('typeId', parseInt(formData.type_id));
         if (formData.company_id) {
-            data.append('company_id', parseInt(formData.company_id));
+            data.append('companyId', parseInt(formData.company_id));
         }
         if (selectedFile) {
             data.append('image', selectedFile);
@@ -401,7 +401,10 @@ const IncidentListPage = () => {
                                                 incident.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                                     'bg-background text-text-muted border-border-color'
                                                 }`}>
-                                                {incident.status}
+                                                {incident.status === 'open' ? 'Abierto' :
+                                                    incident.status === 'in_progress' ? 'En Progreso' :
+                                                        incident.status === 'resolved' ? 'Resuelto' :
+                                                            incident.status === 'closed' ? 'Cerrado' : incident.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -409,7 +412,10 @@ const IncidentListPage = () => {
                                                 incident.priority === 'critical' ? 'text-red-500' :
                                                     'text-text-muted'
                                                 }`}>
-                                                {incident.priority}
+                                                {incident.priority === 'low' ? 'BAJA' :
+                                                    incident.priority === 'medium' ? 'MEDIA' :
+                                                        incident.priority === 'high' ? 'ALTA' :
+                                                            incident.priority === 'critical' ? 'CRÍTICA' : incident.priority}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -533,7 +539,7 @@ const IncidentListPage = () => {
                             </div>
 
                             <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium text-text-muted">Upload Screenshot</label>
+                                <label className="text-sm font-medium text-text-muted">Subir Captura de Pantalla</label>
                                 <div
                                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                     onDragLeave={() => setIsDragging(false)}
@@ -552,10 +558,10 @@ const IncidentListPage = () => {
                                         <Upload className="w-6 h-6 text-text-muted" />
                                     </div>
                                     <p className="text-text-main font-medium mb-1">
-                                        {selectedFile ? selectedFile.name : 'Upload a File'}
+                                        {selectedFile ? selectedFile.name : 'Subir un archivo'}
                                     </p>
                                     <p className="text-sm text-text-muted">
-                                        {selectedFile ? 'Click or drag to change' : 'Drag and drop files here'}
+                                        {selectedFile ? 'Haz clic o arrastra para cambiar' : 'Arrastra y suelta archivos aquí'}
                                     </p>
                                     <input
                                         id="file-upload"

@@ -81,9 +81,8 @@ const IncidentDetailPage = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            // Filter only agents or admins for assignment if needed, or allow all.
-            // Let's allow agents and admins.
-            const assignables = data.filter(u => ['agent', 'superadmin', 'company_admin'].includes(u.role));
+            // Filter only agents or superadmins for assignment as requested.
+            const assignables = data.filter(u => ['agent', 'superadmin'].includes(u.role));
             setUsers(assignables);
         } catch (error) {
             console.error(error);
@@ -208,7 +207,10 @@ const IncidentDetailPage = () => {
                                 incident.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                     'bg-background text-text-muted border-border-color'
                                 }`}>
-                                {incident.status}
+                                {incident.status === 'open' ? 'Abierto' :
+                                    incident.status === 'in_progress' ? 'En Progreso' :
+                                        incident.status === 'resolved' ? 'Resuelto' :
+                                            incident.status === 'closed' ? 'Cerrado' : incident.status}
                             </span>
                         </div>
                         <h1 className="text-2xl font-bold text-text-main mb-2">{incident.title}</h1>
@@ -321,11 +323,11 @@ const IncidentDetailPage = () => {
                             >
                                 <option value="">Sin Asignar</option>
                                 {users.map(u => (
-                                    <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                                    <option key={u.id} value={u.id}>{u.name} ({u.role === 'agent' ? 'Agente' : 'Admin'})</option>
                                 ))}
                             </select>
                         ) : (
-                            <span className="text-text-main font-medium">{incident.assignee?.name || 'Unassigned'}</span>
+                            <span className="text-text-main font-medium">{incident.assignee?.name || 'Sin asignar'}</span>
                         )}
                     </div>
 
@@ -347,7 +349,12 @@ const IncidentDetailPage = () => {
                         ) : (
                             <span className={`font-bold uppercase ${incident.priority === 'high' ? 'text-orange-500' :
                                 incident.priority === 'critical' ? 'text-red-500' : 'text-text-muted'
-                                }`}>{incident.priority}</span>
+                                }`}>
+                                {incident.priority === 'low' ? 'BAJA' :
+                                    incident.priority === 'medium' ? 'MEDIA' :
+                                        incident.priority === 'high' ? 'ALTA' :
+                                            incident.priority === 'critical' ? 'CRÍTICA' : incident.priority}
+                            </span>
                         )}
                     </div>
 
@@ -367,7 +374,12 @@ const IncidentDetailPage = () => {
                                 <option value="closed">Cerrado</option>
                             </select>
                         ) : (
-                            <span className="text-text-main font-medium capitalize">{incident.status.replace('_', ' ')}</span>
+                            <span className="text-text-main font-medium">
+                                {incident.status === 'open' ? 'Abierto' :
+                                    incident.status === 'in_progress' ? 'En Progreso' :
+                                        incident.status === 'resolved' ? 'Resuelto' :
+                                            incident.status === 'closed' ? 'Cerrado' : incident.status}
+                            </span>
                         )}
                     </div>
                 </div>
@@ -394,7 +406,11 @@ const IncidentDetailPage = () => {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="font-bold text-text-main text-sm">{comment.author?.name}</span>
-                                            <span className="text-xs text-text-muted capitalize px-2 py-0.5 bg-background rounded border border-border-color">{comment.author?.role}</span>
+                                            <span className="text-xs text-text-muted capitalize px-2 py-0.5 bg-background rounded border border-border-color">
+                                                {comment.author?.role === 'agent' ? 'Agente' :
+                                                    comment.author?.role === 'superadmin' ? 'Admin' :
+                                                        comment.author?.role === 'company_admin' ? 'Admin Empresa' : 'Cliente'}
+                                            </span>
                                             <span className="text-xs text-text-muted ml-auto">
                                                 {new Date(comment.createdAt).toLocaleString()}
                                             </span>

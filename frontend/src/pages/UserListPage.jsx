@@ -270,7 +270,9 @@ const UserListPage = () => {
                                     <td className="px-6 py-4 text-text-muted">{u.email}</td>
                                     <td className="px-6 py-4">
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-background text-text-muted border border-border-color capitalize">
-                                            {u.role.replace('_', ' ')}
+                                            {u.role === 'agent' ? 'Agente' :
+                                                u.role === 'superadmin' ? 'Administrador' :
+                                                    u.role === 'company_admin' ? 'Admin Empresa' : 'Cliente'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-text-muted">{u.company?.name || 'N/A'}</td>

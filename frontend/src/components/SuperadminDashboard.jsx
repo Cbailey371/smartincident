@@ -265,7 +265,10 @@ const SuperadminDashboard = () => {
                                             incident.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                                 'bg-surface border-border-color text-text-muted'
                                             }`}>
-                                            {incident.status}
+                                            {incident.status === 'open' ? 'Abierto' :
+                                                incident.status === 'in_progress' ? 'En Progreso' :
+                                                    incident.status === 'resolved' ? 'Resuelto' :
+                                                        incident.status === 'closed' ? 'Cerrado' : incident.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">{incident.company?.name || 'N/A'}</td>

@@ -108,7 +108,10 @@ const ClientDashboard = () => {
                                     ticket.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                         'bg-surface border-border-color text-text-muted'
                                     }`}>
-                                    {ticket.status}
+                                    {ticket.status === 'open' ? 'Abierto' :
+                                        ticket.status === 'in_progress' ? 'En Progreso' :
+                                            ticket.status === 'resolved' ? 'Resuelto' :
+                                                ticket.status === 'closed' ? 'Cerrado' : ticket.status}
                                 </span>
                             </motion.div>
                         ))

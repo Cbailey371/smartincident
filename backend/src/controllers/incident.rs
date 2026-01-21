@@ -15,8 +15,9 @@ use std::path::Path as stdPath;
 use tokio::fs;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct IncidentQuery {
-    pub company_id: Option<String>,
+    pub company_id: Option<String>, // Keep internal name snake_case if preferred, but serde will map from companyId
     pub status: Option<String>,
     pub priority: Option<String>,
     pub assignee_id: Option<i32>,
@@ -123,8 +124,8 @@ pub async fn create_incident(
             "title" => title = field.text().await.unwrap_or_default(),
             "description" => description = field.text().await.unwrap_or_default(),
             "priority" => priority = field.text().await.unwrap_or_default(),
-            "type_id" => type_id = field.text().await.ok().and_then(|t| t.parse().ok()),
-            "company_id" => company_id_input = field.text().await.ok().and_then(|c| c.parse().ok()),
+            "typeId" => type_id = field.text().await.ok().and_then(|t| t.parse().ok()),
+            "companyId" => company_id_input = field.text().await.ok().and_then(|c| c.parse().ok()),
             "image" | "file" => {
                 let file_name = field.file_name().unwrap_or("upload").to_string();
                 let mime = field.content_type().unwrap_or("application/octet-stream").to_string();
@@ -276,12 +277,13 @@ pub async fn get_incident_by_id(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateIncidentRequest {
     pub title: Option<String>,
     pub description: Option<String>,
     pub status: Option<String>,
     pub priority: Option<String>,
-    pub assignee_id: Option<i32>,
+    pub assignee_id: Option<i32>, // serde maps from assigneeId
 }
 
 pub async fn update_incident(

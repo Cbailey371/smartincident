@@ -48,7 +48,11 @@ const Sidebar = () => {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-semibold text-text-main">{user?.name || 'Usuario'}</span>
-                            <span className="text-xs text-text-muted capitalize">{user?.role?.replace('_', ' ') || 'Invitado'}</span>
+                            <span className="text-xs text-text-muted capitalize">
+                                {user?.role === 'agent' ? 'Agente' :
+                                    user?.role === 'superadmin' ? 'Administrador' :
+                                        user?.role === 'company_admin' ? 'Administrador de Empresa' : 'Cliente'}
+                            </span>
                         </div>
                     </div>
                     <button

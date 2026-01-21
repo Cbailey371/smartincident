@@ -81,9 +81,9 @@ const HistoryPage = () => {
             params.append('status', 'closed,resolved'); // FORCE Closed/Resolved
 
             if (filterPriority !== 'all') params.append('priority', filterPriority);
-            if (filterAssignee !== 'all') params.append('assignee_id', filterAssignee);
-            if (filterCompany !== 'all') params.append('company_id', filterCompany);
-            if (searchTerm) params.append('ticket_code', searchTerm); // Assuming simple search by code/title? Backend implemented ticket_code like
+            if (filterAssignee !== 'all') params.append('assigneeId', filterAssignee);
+            if (filterCompany !== 'all') params.append('companyId', filterCompany);
+            if (searchTerm) params.append('ticketCode', searchTerm);
 
             const res = await fetch(`/api/incidents?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -306,7 +306,10 @@ const HistoryPage = () => {
                                                 incident.priority === 'critical' ? 'text-red-500' :
                                                     'text-text-muted'
                                                 }`}>
-                                                {incident.priority}
+                                                {incident.priority === 'low' ? 'BAJA' :
+                                                    incident.priority === 'medium' ? 'MEDIA' :
+                                                        incident.priority === 'high' ? 'ALTA' :
+                                                            incident.priority === 'critical' ? 'CRÍTICA' : incident.priority}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
