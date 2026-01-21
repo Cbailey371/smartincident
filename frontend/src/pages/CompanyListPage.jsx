@@ -90,11 +90,16 @@ const CompanyListPage = () => {
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
         try {
-            await fetch(`/api/companies/${id}`, {
+            const res = await fetch(`/api/companies/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            fetchCompanies();
+            if (res.ok) {
+                fetchCompanies();
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Error al eliminar empresa');
+            }
         } catch (error) {
             console.error(error);
         }

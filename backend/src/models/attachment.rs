@@ -21,13 +21,15 @@ pub enum Relation {
     #[sea_orm(
         belongs_to = "super::incident::Entity",
         from = "Column::IncidentId",
-        to = "super::incident::Column::Id"
+        to = "super::incident::Column::Id",
+        on_delete = "Cascade"
     )]
     Incident,
     #[sea_orm(
         belongs_to = "super::comment::Entity",
         from = "Column::CommentId",
-        to = "super::comment::Column::Id"
+        to = "super::comment::Column::Id",
+        on_delete = "Cascade"
     )]
     Comment,
 }

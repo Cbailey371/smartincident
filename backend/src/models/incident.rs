@@ -47,9 +47,9 @@ pub enum Relation {
         to = "super::ticket_type::Column::Id"
     )]
     TicketType,
-    #[sea_orm(has_many = "super::comment::Entity")]
+    #[sea_orm(has_many = "super::comment::Entity", on_delete = "Cascade")]
     Comment,
-    #[sea_orm(has_many = "super::attachment::Entity")]
+    #[sea_orm(has_many = "super::attachment::Entity", on_delete = "Cascade")]
     Attachment,
 }
 

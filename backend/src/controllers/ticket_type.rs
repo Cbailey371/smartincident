@@ -6,7 +6,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{ticket_type, incident};
+use crate::models::{ticket_type, incident, comment, attachment};
 use crate::middleware::auth::AuthUser;
 use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
@@ -109,11 +109,37 @@ pub async fn delete_ticket_type(
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Ticket type not found"}))))?;
 
     // 1. Delete all incidents of this type
-    incident::Entity::delete_many()
+    // To ensures deletion succeeds, we first delete attachments and comments linked to these incidents
+    let type_incidents = incident::Entity::find()
         .filter(incident::Column::TypeId.eq(id))
-        .exec(&state.db)
+        .all(&state.db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+    
+    let incident_ids: Vec<i32> = type_incidents.iter().map(|i| i.id).collect();
+
+    if !incident_ids.is_empty() {
+        // Delete attachments of these incidents
+        attachment::Entity::delete_many()
+            .filter(attachment::Column::IncidentId.is_in(incident_ids.clone()))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related attachments: {}", e)}))))?;
+
+        // Delete comments of these incidents
+        comment::Entity::delete_many()
+            .filter(comment::Column::IncidentId.is_in(incident_ids.clone()))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related comments: {}", e)}))))?;
+
+        // Delete the incidents themselves
+        incident::Entity::delete_many()
+            .filter(incident::Column::TypeId.eq(id))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+    }
 
     // 2. Delete the ticket type
     tt.delete(&state.db)

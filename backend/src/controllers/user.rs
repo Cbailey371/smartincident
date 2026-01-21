@@ -6,7 +6,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{user, company, incident};
+use crate::models::{user, company, incident, comment, attachment};
 use crate::middleware::auth::AuthUser;
 use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait, sea_query::Expr};
 use chrono::Utc;
@@ -191,15 +191,37 @@ pub async fn delete_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
     // 2. Handle incidents reported by this user
-    // We can either delete them or reassign them to a system user. 
-    // Given the user's request, they likely want the user and their data gone or the blockage removed.
-    // For now, we will delete the incidents reported by the user to satisfy the constraint.
-    // Note: This will fail if there are comments/attachments without cascade delete.
-    incident::Entity::delete_many()
+    // To ensure deletion succeeds, we first delete attachments and comments linked to these incidents
+    let reported_incidents = incident::Entity::find()
         .filter(incident::Column::ReporterId.eq(id))
-        .exec(&state.db)
+        .all(&state.db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+    
+    let incident_ids: Vec<i32> = reported_incidents.iter().map(|i| i.id).collect();
+
+    if !incident_ids.is_empty() {
+        // Delete attachments of these incidents
+        attachment::Entity::delete_many()
+            .filter(attachment::Column::IncidentId.is_in(incident_ids.clone()))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related attachments: {}", e)}))))?;
+
+        // Delete comments of these incidents
+        comment::Entity::delete_many()
+            .filter(comment::Column::IncidentId.is_in(incident_ids.clone()))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related comments: {}", e)}))))?;
+
+        // Delete the incidents themselves
+        incident::Entity::delete_many()
+            .filter(incident::Column::ReporterId.eq(id))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+    }
 
     // 3. Delete the user
     user_model.delete(&state.db)

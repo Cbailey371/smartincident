@@ -126,11 +126,16 @@ const UserListPage = () => {
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
         try {
-            await fetch(`/api/users/${id}`, {
+            const res = await fetch(`/api/users/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            fetchUsers();
+            if (res.ok) {
+                fetchUsers();
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Error al eliminar usuario');
+            }
         } catch (error) {
             console.error(error);
         }
