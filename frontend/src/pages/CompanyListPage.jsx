@@ -110,6 +110,34 @@ const CompanyListPage = () => {
         setFormData({ name: '', address: '', contact_email: '', status: 'active' });
     };
 
+    const toggleStatus = async (company) => {
+        const newStatus = company.status === 'active' ? 'inactive' : 'active';
+        const userInfo = localStorage.getItem('userInfo');
+        const token = userInfo ? JSON.parse(userInfo).token : null;
+
+        try {
+            const res = await fetch(`/api/companies/${company.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: company.name,
+                    address: company.address,
+                    contact_email: company.contact_email,
+                    status: newStatus
+                })
+            });
+
+            if (res.ok) {
+                fetchCompanies();
+            }
+        } catch (error) {
+            console.error("Error toggling status", error);
+        }
+    };
+
     const filteredCompanies = companies.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === 'all' ? true : c.status === filterStatus;
@@ -212,12 +240,17 @@ const CompanyListPage = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${company.status === 'active'
-                                            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                            : 'bg-background text-text-muted border border-border-color'
-                                            }`}>
-                                            {company.status === 'active' ? 'Activo' : 'Inactivo'}
-                                        </span>
+                                        <button
+                                            onClick={() => toggleStatus(company)}
+                                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer transition-all hover:brightness-110 active:scale-95 ${company.status === 'active'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]'
+                                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 shadow-[0_0_12px_rgba(244,63,94,0.1)]'
+                                                }`}
+                                            title={company.status === 'active' ? "Desactivar Empresa" : "Activar Empresa"}
+                                        >
+                                            <span className={`w-2 h-2 rounded-full mr-2 ${company.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+                                            {company.status === 'active' ? 'Activa' : 'Inactiva'}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4 text-text-muted">{company.usersCount}</td>
                                     <td className="px-6 py-4 text-text-muted">{company.ticketsCount}</td>
