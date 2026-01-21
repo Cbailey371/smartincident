@@ -66,15 +66,23 @@ pub async fn get_dashboard_metrics(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
     // Calculate metrics in memory
-    let active = items.iter().filter(|(i, _)| i.status != "resolved" && i.status != "closed").count();
+    let open_count = items.iter().filter(|(i, _)| i.status == "open" || i.status == "in_progress").count();
+    let resolved_count = items.iter().filter(|(i, _)| i.status == "resolved").count();
+    let closed_count = items.iter().filter(|(i, _)| i.status == "closed").count();
+    let active = open_count; // active is essentially what is not resolved/closed
     let critical = items.iter().filter(|(i, _)| i.priority == "high" || i.priority == "critical").count();
     let overdue = items.iter().filter(|(i, _)| i.status == "overdue").count(); 
     let new_today = items.len();
 
     // recent incidents (last 5)
-    let recent_incidents: Vec<Value> = items.iter()
-        .rev()
-        .take(5)
+    let iter = items.iter().rev();
+    let filtered_recent: Vec<_> = if user.user.role == "client" {
+        iter.filter(|(i, _)| i.status != "closed").take(5).collect()
+    } else {
+        iter.take(5).collect()
+    };
+
+    let recent_incidents: Vec<Value> = filtered_recent.into_iter()
         .map(|(i, companies)| {
             let company_name = companies.first().map(|c| c.name.clone()).unwrap_or_else(|| "N/A".into());
             json!({
@@ -91,6 +99,9 @@ pub async fn get_dashboard_metrics(
         .collect();
 
     let metrics = json!({
+        "open": open_count,
+        "resolved": resolved_count,
+        "closed": closed_count,
         "active": active,
         "critical": critical,
         "slaCompliance": "100%",

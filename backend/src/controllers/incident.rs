@@ -239,8 +239,14 @@ pub async fn get_incident_by_id(
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Incident not found"}))))?;
 
     // Authorization check
-    if user_auth.user.role == "client" && incident.reporter_id != user_auth.user.id {
-        return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
+    if user_auth.user.role == "client" {
+        if let Some(cid) = user_auth.user.company_id {
+            if incident.company_id != cid {
+                return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized (Company Mismatch)"}))));
+            }
+        } else if incident.reporter_id != user_auth.user.id {
+            return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized (Not Reporter)"}))));
+        }
     }
 
     let mut inc_val = json!(incident);

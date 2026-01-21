@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import DashboardCard from './DashboardCard';
 
 const ClientDashboard = () => {
-    const [stats, setStats] = useState({ open: 0, resolved: 0 });
+    const [stats, setStats] = useState({ open: 0, resolved: 0, closed: 0 });
     const [recentTickets, setRecentTickets] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +31,7 @@ const ClientDashboard = () => {
         fetchDashboard();
     }, []);
 
-    if (loading) return <div className="text-white p-8 animate-pulse">Cargando...</div>;
+    if (loading) return <div className="text-white p-8 animate-pulse text-center">Cargando dashboard...</div>;
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -71,9 +71,10 @@ const ClientDashboard = () => {
                 <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <DashboardCard title="Tickets Abiertos" value={stats.open} icon={Clock} color="bg-blue-500" delay={0.2} />
                 <DashboardCard title="Tickets Resueltos" value={stats.resolved} icon={CheckCircle} color="bg-emerald-500" delay={0.3} />
+                <DashboardCard title="Tickets Cerrados" value={stats.closed} icon={CheckCircle} color="bg-slate-500" delay={0.4} />
             </div>
 
             <motion.div
