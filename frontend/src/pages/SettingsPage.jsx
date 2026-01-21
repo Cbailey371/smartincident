@@ -51,12 +51,12 @@ const SettingsPage = () => {
                 const data = await res.json();
                 // Handle both snake_case (old) and camelCase (new) for robustness
                 setEmailConfig({
-                    smtpHost: data.smtpHost !== undefined ? data.smtpHost : data.smtp_host,
-                    smtpPort: data.smtpPort !== undefined ? data.smtpPort : data.smtp_port,
-                    smtpUser: data.smtpUser !== undefined ? data.smtpUser : data.smtp_user,
-                    smtpPass: data.smtpPass !== undefined ? data.smtpPass : data.smtp_pass,
-                    senderEmail: data.senderEmail !== undefined ? data.senderEmail : data.sender_email,
-                    isActive: data.isActive !== undefined ? data.isActive : data.is_active
+                    smtpHost: data.smtpHost ?? data.smtp_host ?? '',
+                    smtpPort: data.smtpPort ?? data.smtp_port ?? 587,
+                    smtpUser: data.smtpUser ?? data.smtp_user ?? '',
+                    smtpPass: data.smtpPass ?? data.smtp_pass ?? '',
+                    senderEmail: data.senderEmail ?? data.sender_email ?? '',
+                    isActive: data.isActive ?? data.is_active ?? false
                 });
             }
         } catch (error) {
@@ -133,9 +133,9 @@ const SettingsPage = () => {
             if (Array.isArray(data)) {
                 const normalizedData = data.map(t => ({
                     ...t,
-                    slaResponse: t.slaResponse !== undefined ? t.slaResponse : t.sla_response,
-                    slaResolution: t.slaResolution !== undefined ? t.slaResolution : t.sla_resolution,
-                    isGlobal: t.isGlobal !== undefined ? t.isGlobal : t.is_global
+                    slaResponse: t.slaResponse ?? t.sla_response ?? 0,
+                    slaResolution: t.slaResolution ?? t.sla_resolution ?? 0,
+                    isGlobal: t.isGlobal ?? t.is_global ?? false
                 }));
                 setTicketTypes(normalizedData);
             } else {

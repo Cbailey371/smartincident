@@ -49,9 +49,20 @@ pub async fn get_notification_config(
             }
         });
 
-    let mut val = json!(config);
+    let mut val = json!({
+        "id": config.id,
+        "smtpHost": config.smtp_host,
+        "smtpPort": config.smtp_port,
+        "smtpUser": config.smtp_user,
+        "smtpPass": config.smtp_pass,
+        "senderEmail": config.sender_email,
+        "isActive": config.is_active,
+        "createdAt": config.created_at,
+        "updatedAt": config.updated_at,
+    });
+
     if user.user.role != "superadmin" {
-        val["smtp_pass"] = json!("******");
+        val["smtpPass"] = json!("******");
     }
 
     Ok(Json(val))
