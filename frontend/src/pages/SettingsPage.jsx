@@ -146,7 +146,14 @@ const SettingsPage = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(newType)
+                body: JSON.stringify({
+                    name: newType.name,
+                    description: newType.description || '',
+                    sla_response: parseInt(newType.sla_response) || 0,
+                    sla_resolution: parseInt(newType.sla_resolution) || 0,
+                    is_global: !!newType.is_global,
+                    companies: []
+                })
             });
 
             if (res.ok) {
@@ -166,11 +173,11 @@ const SettingsPage = () => {
     const handleEditClick = (type) => {
         setEditingType(type);
         setNewType({
-            name: type.name,
-            sla_response: type.sla_response,
-            sla_resolution: type.sla_resolution,
-            is_global: type.is_global,
-            companies: [] // Assuming backend doesn't return associated companies easily for now, or keep empty to not overwrite if not changing
+            name: type.name || '',
+            sla_response: type.sla_response || 0,
+            sla_resolution: type.sla_resolution || 0,
+            is_global: !!type.is_global,
+            companies: []
         });
         setShowTypeForm(true);
     };
