@@ -6,10 +6,10 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{incident, user, attachment};
+use crate::models::{incident, user, attachment, company};
 use crate::middleware::auth::AuthUser;
 use crate::utils::email::EmailService;
-use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter};
+use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 use std::path::Path as stdPath;
 use tokio::fs;
@@ -76,13 +76,29 @@ pub async fn get_all_incidents(
         query = query.filter(incident::Column::TicketCode.contains(&code));
     }
 
-    let incidents = query
+    let incidents_with_related = query
+        .find_with_related(company::Entity)
         .order_by_desc(incident::Column::CreatedAt)
         .all(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(incidents))
+    let mut result: Vec<Value> = Vec::new();
+
+    for (inc, companies) in incidents_with_related {
+        let mut inc_val = json!(inc);
+        inc_val["company"] = json!(companies.first());
+        
+        // Also fetch assignee if exists
+        if let Some(aid) = inc.assignee_id {
+            let assignee = user::Entity::find_by_id(aid).one(&state.db).await.unwrap_or(None);
+            inc_val["assignee"] = json!(assignee);
+        }
+
+        result.push(inc_val);
+    }
+
+    Ok(Json(json!(result)))
 }
 
 

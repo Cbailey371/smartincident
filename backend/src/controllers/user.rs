@@ -6,26 +6,33 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::user;
+use crate::models::{user, company};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 use bcrypt::{hash, DEFAULT_COST};
 
 pub async fn get_all_users(
     State(state): State<AppState>,
     user: AuthUser,
-) -> Result<Json<Vec<user::Model>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     if user.user.role != "superadmin" {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Only superadmin can list users"}))));
     }
 
-    let users = user::Entity::find()
+    let users_with_companies = user::Entity::find()
+        .find_with_related(company::Entity)
         .all(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(users))
+    let result: Vec<Value> = users_with_companies.into_iter().map(|(u, companies)| {
+        let mut user_val = json!(u);
+        user_val["company"] = json!(companies.first());
+        user_val
+    }).collect();
+
+    Ok(Json(json!(result)))
 }
 
 #[derive(Deserialize)]
@@ -79,25 +86,37 @@ pub async fn create_user(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok((StatusCode::CREATED, Json(user_model)))
+    // Return the user with company info if possible (optional but good for UI consistency)
+    let mut user_val = json!(user_model);
+    if let Some(cid) = user_model.company_id {
+        let company = company::Entity::find_by_id(cid).one(&state.db).await.unwrap_or(None);
+        user_val["company"] = json!(company);
+    }
+
+    Ok((StatusCode::CREATED, Json(user_val)))
 }
 
 pub async fn get_user_by_id(
     State(state): State<AppState>,
     user_auth: AuthUser,
     Path(id): Path<i32>,
-) -> Result<Json<user::Model>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     if user_auth.user.role != "superadmin" && user_auth.user.id != id {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
 
-    let user_model = user::Entity::find_by_id(id)
-        .one(&state.db)
+    let user_with_company = user::Entity::find_by_id(id)
+        .find_with_related(company::Entity)
+        .all(&state.db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
-        .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))))?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(user_model))
+    let (u, companies) = user_with_company.first().cloned().ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))))?;
+    
+    let mut user_val = json!(u);
+    user_val["company"] = json!(companies.first());
+
+    Ok(Json(user_val))
 }
 
 pub async fn update_user(
@@ -135,7 +154,13 @@ pub async fn update_user(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(updated))
+    let mut user_val = json!(updated);
+    if let Some(cid) = updated.company_id {
+        let company = company::Entity::find_by_id(cid).one(&state.db).await.unwrap_or(None);
+        user_val["company"] = json!(company);
+    }
+
+    Ok(Json(user_val))
 }
 
 pub async fn delete_user(
