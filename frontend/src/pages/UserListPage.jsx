@@ -93,14 +93,15 @@ const UserListPage = () => {
             const method = editingUser ? 'PUT' : 'POST';
 
             // Clean up empty password if editing
-            const payload = { ...formData };
+            const payload = {
+                ...formData,
+                company_id: formData.company_id ? parseInt(formData.company_id) : null
+            };
             if (editingUser && !payload.password) delete payload.password;
 
             // Auto-assign company for Company Admins
             if (user?.role === 'company_admin') {
                 payload.company_id = user.company_id;
-            } else if (!payload.company_id) {
-                payload.company_id = null;
             }
 
             const res = await fetch(url, {

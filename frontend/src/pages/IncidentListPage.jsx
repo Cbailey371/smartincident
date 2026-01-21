@@ -124,9 +124,9 @@ const IncidentListPage = () => {
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('priority', formData.priority);
-        data.append('type_id', formData.type_id);
+        data.append('type_id', parseInt(formData.type_id));
         if (formData.company_id) {
-            data.append('company_id', formData.company_id);
+            data.append('company_id', parseInt(formData.company_id));
         }
         if (selectedFile) {
             data.append('image', selectedFile);
