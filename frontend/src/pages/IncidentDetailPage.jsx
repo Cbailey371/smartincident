@@ -276,20 +276,21 @@ const IncidentDetailPage = () => {
                                     <div key={att.id} className="group relative">
                                         {isImage ? (
                                             <div
-                                                onClick={() => setPreviewImage(`/${att.filePath.replace(/\\/g, '/')}`)}
+                                                onClick={() => setPreviewImage(`/api/${att.filePath.replace(/\\/g, '/')}`)}
                                                 className="cursor-pointer transition-transform hover:scale-105"
                                             >
                                                 <img
-                                                    src={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                    src={`/api/${att.filePath.replace(/\\/g, '/')}`}
                                                     alt={att.originalName}
                                                     className="w-24 h-24 object-cover rounded-lg border border-border-color shadow-sm group-hover:shadow-md"
                                                 />
                                             </div>
                                         ) : (
                                             <a
-                                                href={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                href={`/api/${att.filePath.replace(/\\/g, '/')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                download={att.originalName}
                                                 className="flex flex-col items-center justify-center w-24 h-24 bg-background border border-border-color rounded-lg hover:bg-primary/5 transition-all group"
                                             >
                                                 <div className="relative">
@@ -434,20 +435,21 @@ const IncidentDetailPage = () => {
                                                             <div key={att.id}>
                                                                 {isImage ? (
                                                                     <div
-                                                                        onClick={() => setPreviewImage(`/${att.filePath.replace(/\\/g, '/')}`)}
+                                                                        onClick={() => setPreviewImage(`/api/${att.filePath.replace(/\\/g, '/')}`)}
                                                                         className="cursor-pointer group"
                                                                     >
                                                                         <img
-                                                                            src={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                                            src={`/api/${att.filePath.replace(/\\/g, '/')}`}
                                                                             alt={att.originalName}
                                                                             className="w-full h-24 object-cover rounded-lg border border-border-color group-hover:opacity-90 transition-opacity"
                                                                         />
                                                                     </div>
                                                                 ) : (
                                                                     <a
-                                                                        href={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                                        href={`/api/${att.filePath.replace(/\\/g, '/')}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
+                                                                        download={att.originalName}
                                                                         className="flex items-center gap-2 p-2 bg-background/50 rounded-lg border border-border-color/50 hover:border-primary/50 hover:bg-primary/5 transition-all group"
                                                                     >
                                                                         <div className="bg-primary/10 p-1.5 rounded text-primary">
