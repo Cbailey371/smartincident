@@ -6,12 +6,12 @@ const Sidebar = () => {
     const { user, logout } = useAuth();
 
     const allNavItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/', roles: ['superadmin', 'company_admin', 'agent', 'client'] },
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/', roles: ['superadmin', 'agent', 'client'] },
         { icon: Building2, label: 'Empresas', path: '/companies', roles: ['superadmin'] },
-        { icon: Users, label: 'Usuarios', path: '/users', roles: ['company_admin', 'superadmin'] },
-        { icon: Ticket, label: 'Incidentes', path: '/incidents', roles: ['superadmin', 'company_admin', 'agent', 'client'] },
-        { icon: History, label: 'Historial', path: '/history', roles: ['superadmin', 'company_admin', 'agent', 'client'] },
-        { icon: Settings, label: 'Configuración', path: '/settings', roles: ['superadmin', 'company_admin'] },
+        { icon: Users, label: 'Usuarios', path: '/users', roles: ['superadmin'] },
+        { icon: Ticket, label: 'Incidentes', path: '/incidents', roles: ['superadmin', 'agent', 'client'] },
+        { icon: History, label: 'Historial', path: '/history', roles: ['superadmin', 'agent', 'client'] },
+        { icon: Settings, label: 'Configuración', path: '/settings', roles: ['superadmin'] },
     ];
 
     const navItems = allNavItems.filter(item => item.roles.includes(user?.role));
@@ -50,8 +50,7 @@ const Sidebar = () => {
                             <span className="text-sm font-semibold text-text-main">{user?.name || 'Usuario'}</span>
                             <span className="text-xs text-text-muted capitalize">
                                 {user?.role === 'agent' ? 'Agente' :
-                                    user?.role === 'superadmin' ? 'Administrador' :
-                                        user?.role === 'company_admin' ? 'Administrador de Empresa' : 'Cliente'}
+                                    user?.role === 'superadmin' ? 'Administrador' : 'Cliente'}
                             </span>
                         </div>
                     </div>

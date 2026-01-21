@@ -23,10 +23,10 @@ const HistoryPage = () => {
 
     useEffect(() => {
         // Fetch specific data for filters based on roles
-        if (['superadmin', 'company_admin', 'agent'].includes(user?.role)) {
+        if (['superadmin', 'agent'].includes(user?.role)) {
             fetchUsers();
         }
-        if (['superadmin', 'company_admin'].includes(user?.role)) {
+        if (['superadmin'].includes(user?.role)) {
             fetchCompanies();
         }
     }, [user]);
@@ -217,7 +217,7 @@ const HistoryPage = () => {
                             </select>
                         </div>
 
-                        {(user?.role === 'superadmin' || user?.role === 'company_admin' || user?.role === 'agent') && (
+                        {(user?.role === 'superadmin' || user?.role === 'agent') && (
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-text-muted flex items-center gap-1">
                                     <User className="w-3 h-3" /> Asignado Originalmente

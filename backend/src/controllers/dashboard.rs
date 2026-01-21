@@ -25,7 +25,7 @@ pub async fn get_dashboard_metrics(
     user: AuthUser,
     Query(params): Query<DashboardQuery>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    // Logic mostly for superadmin/company_admin. 
+    // Logic mostly for superadmin. 
     // Agents/Clients usually use different dashboards but let's support authorized users.
     
     // Parse dates
@@ -40,13 +40,6 @@ pub async fn get_dashboard_metrics(
         "superadmin" => {
             if let Some(cid) = params.company_id {
                 query = query.filter(incident::Column::CompanyId.eq(cid));
-            }
-        },
-        "company_admin" => {
-            if let Some(cid) = user.user.company_id {
-                query = query.filter(incident::Column::CompanyId.eq(cid));
-            } else {
-                return Err((StatusCode::FORBIDDEN, Json(json!({"error": "No company assigned"}))));
             }
         },
         _ => {

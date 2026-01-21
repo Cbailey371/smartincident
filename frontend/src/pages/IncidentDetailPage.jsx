@@ -30,7 +30,7 @@ const IncidentDetailPage = () => {
     useEffect(() => {
         fetchIncident();
         fetchComments();
-        if (['superadmin', 'company_admin', 'agent'].includes(user?.role)) {
+        if (['superadmin', 'agent'].includes(user?.role)) {
             fetchUsers();
         }
     }, [id, user]);
@@ -164,13 +164,18 @@ const IncidentDetailPage = () => {
         try {
             const userInfo = localStorage.getItem('userInfo');
             const token = userInfo ? JSON.parse(userInfo).token : null;
+            const payload = {
+                ...editData,
+                assigneeId: editData.assigneeId ? parseInt(editData.assigneeId) : null
+            };
+
             const res = await fetch(`/api/incidents/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(editData)
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
@@ -185,7 +190,7 @@ const IncidentDetailPage = () => {
     if (loading) return <div className="text-text-main p-8 animate-pulse">Cargando detalles...</div>;
     if (!incident) return <div className="text-red-500 p-8">Incidente no encontrado</div>;
 
-    const canManage = ['superadmin', 'company_admin', 'agent'].includes(user?.role);
+    const canManage = ['superadmin', 'agent'].includes(user?.role);
 
     return (
         <div className="max-w-5xl mx-auto space-y-6">
@@ -408,8 +413,7 @@ const IncidentDetailPage = () => {
                                             <span className="font-bold text-text-main text-sm">{comment.author?.name}</span>
                                             <span className="text-xs text-text-muted capitalize px-2 py-0.5 bg-background rounded border border-border-color">
                                                 {comment.author?.role === 'agent' ? 'Agente' :
-                                                    comment.author?.role === 'superadmin' ? 'Admin' :
-                                                        comment.author?.role === 'company_admin' ? 'Admin Empresa' : 'Cliente'}
+                                                    comment.author?.role === 'superadmin' ? 'Admin' : 'Cliente'}
                                             </span>
                                             <span className="text-xs text-text-muted ml-auto">
                                                 {new Date(comment.createdAt).toLocaleString()}

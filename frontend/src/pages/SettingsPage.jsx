@@ -15,7 +15,7 @@ const SettingsPage = () => {
     const [newType, setNewType] = useState({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
 
     useEffect(() => {
-        if (activeTab === 'catalog' && (user?.role === 'superadmin' || user?.role === 'company_admin')) {
+        if (activeTab === 'catalog' && user?.role === 'superadmin') {
             fetchTicketTypes();
             if (user?.role === 'superadmin') fetchCompanies();
         }
@@ -197,7 +197,7 @@ const SettingsPage = () => {
         { id: 'notifications', label: 'Notificaciones', icon: Bell },
         { id: 'security', label: 'Seguridad', icon: Shield },
         { id: 'email', label: 'Servidor de Correo', icon: Mail },
-        ...(['superadmin', 'company_admin'].includes(user?.role) ? [{ id: 'catalog', label: 'Catálogo de Incidentes', icon: Tag }] : []),
+        ...(['superadmin'].includes(user?.role) ? [{ id: 'catalog', label: 'Catálogo de Incidentes', icon: Tag }] : []),
     ];
 
     return (

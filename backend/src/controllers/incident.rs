@@ -42,11 +42,6 @@ pub async fn get_all_incidents(
                 }
             }
         }
-        "company_admin" => {
-            if let Some(cid) = user.user.company_id {
-                query = query.filter(incident::Column::CompanyId.eq(cid));
-            }
-        }
         "client" => {
             query = query.filter(incident::Column::ReporterId.eq(user.user.id));
         }
@@ -241,9 +236,6 @@ pub async fn get_incident_by_id(
 
     // Authorization check
     if user_auth.user.role == "client" && incident.reporter_id != user_auth.user.id {
-        return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
-    }
-    if user_auth.user.role == "company_admin" && incident.company_id != user_auth.user.company_id.unwrap_or(0) {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
 
