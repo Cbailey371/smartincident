@@ -24,6 +24,7 @@ pub async fn get_all_ticket_types(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateTicketTypeRequest {
     pub name: String,
     pub description: Option<String>,
