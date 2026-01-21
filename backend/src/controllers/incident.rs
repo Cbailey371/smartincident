@@ -125,12 +125,9 @@ pub async fn create_incident(
             "image" | "file" => {
                 let file_name = field.file_name().unwrap_or("upload").to_string();
                 let mime = field.content_type().unwrap_or("application/octet-stream").to_string();
-                let mut bytes = Vec::new();
-                let mut field = field;
-                while let Some(chunk) = field.chunk().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))? {
-                    bytes.extend_from_slice(&chunk);
-                }
-                file_data = Some((file_name, bytes, mime));
+                let bytes = field.bytes().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+                tracing::info!("RECEPTOR: Archivo '{}' recibido con {} bytes", file_name, bytes.len());
+                file_data = Some((file_name, bytes.to_vec(), mime));
             }
             _ => {}
         }
