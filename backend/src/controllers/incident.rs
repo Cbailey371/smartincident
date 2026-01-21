@@ -240,12 +240,19 @@ pub async fn get_incident_by_id(
 
     // Authorization check
     if user_auth.user.role == "client" {
-        if let Some(cid) = user_auth.user.company_id {
-            if incident.company_id != cid {
-                return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized (Company Mismatch)"}))));
-            }
-        } else if incident.reporter_id != user_auth.user.id {
-            return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized (Not Reporter)"}))));
+        let user_id = user_auth.user.id;
+        let user_cid = user_auth.user.company_id.unwrap_or(0);
+        let is_reporter = incident.reporter_id == user_id;
+        let matches_company = user_cid != 0 && incident.company_id == user_cid;
+
+        tracing::info!(
+            "Detail Access Check - User: {}, Role: {}, UserCID: {}, Inc: {}, IncCID: {}, IsRep: {}, MatchComp: {}",
+            user_id, user_auth.user.role, user_cid, incident.id, incident.company_id, is_reporter, matches_company
+        );
+
+        if !is_reporter && !matches_company {
+            tracing::warn!("Client {} denied access to incident {}", user_id, incident.id);
+            return Err((StatusCode::FORBIDDEN, Json(json!({"error": "No tiene permisos para ver este incidente"}))));
         }
     }
 
