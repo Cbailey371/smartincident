@@ -182,6 +182,22 @@ pub async fn delete_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "User not found"}))))?;
 
+    // 1. Handle incidents assigned to this user
+    incident::Entity::update_many()
+        .col_expr(incident::Column::AssigneeId, Expr::value(Value::Int(None)))
+        .filter(incident::Column::AssigneeId.eq(id))
+        .exec(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+
+    // 2. Handle incidents reported by this user
+    incident::Entity::delete_many()
+        .filter(incident::Column::ReporterId.eq(id))
+        .exec(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+
+    // 3. Delete the user
     user_model.delete(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;

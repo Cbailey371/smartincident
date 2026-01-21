@@ -22,13 +22,23 @@ const SettingsPage = () => {
         if (activeTab === 'email' && user?.role === 'superadmin') {
             fetchEmailConfig();
         }
+        if (activeTab === 'notifications') {
+            fetchEmailConfig();
+        }
     }, [activeTab]);
 
     // Security State
-    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [passwordData, setPasswordData] = useState({ currentPassword: '', name: '', newPassword: '', confirmPassword: '' });
 
-    // Email Config State
-    const [emailConfig, setEmailConfig] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_pass: '', sender_email: '', is_active: false });
+    // Email Config State (camelCase to match backend)
+    const [emailConfig, setEmailConfig] = useState({
+        smtpHost: '',
+        smtpPort: 587,
+        smtpUser: '',
+        smtpPass: '',
+        senderEmail: '',
+        isActive: false
+    });
 
     const fetchEmailConfig = async () => {
         const userInfo = localStorage.getItem('userInfo');
@@ -39,7 +49,15 @@ const SettingsPage = () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                setEmailConfig(data);
+                // Handle both snake_case (old) and camelCase (new) for robustness
+                setEmailConfig({
+                    smtpHost: data.smtpHost !== undefined ? data.smtpHost : data.smtp_host,
+                    smtpPort: data.smtpPort !== undefined ? data.smtpPort : data.smtp_port,
+                    smtpUser: data.smtpUser !== undefined ? data.smtpUser : data.smtp_user,
+                    smtpPass: data.smtpPass !== undefined ? data.smtpPass : data.smtp_pass,
+                    senderEmail: data.senderEmail !== undefined ? data.senderEmail : data.sender_email,
+                    isActive: data.isActive !== undefined ? data.isActive : data.is_active
+                });
             }
         } catch (error) {
             console.error(error);
@@ -81,7 +99,7 @@ const SettingsPage = () => {
     };
 
     const handleUpdateEmailConfig = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const userInfo = localStorage.getItem('userInfo');
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
@@ -96,8 +114,8 @@ const SettingsPage = () => {
             });
 
             if (res.ok) {
-                alert('Configuración SMTP guardada');
-                fetchEmailConfig(); // Refresh to ensure clean state (e.g. masked password)
+                if (e) alert('Configuración SMTP guardada');
+                fetchEmailConfig();
             }
         } catch (error) {
             console.error(error);
@@ -113,7 +131,6 @@ const SettingsPage = () => {
             });
             const data = await res.json();
             if (Array.isArray(data)) {
-                // Defensive mapping for both snake_case and camelCase
                 const normalizedData = data.map(t => ({
                     ...t,
                     slaResponse: t.slaResponse !== undefined ? t.slaResponse : t.sla_response,
@@ -122,7 +139,6 @@ const SettingsPage = () => {
                 }));
                 setTicketTypes(normalizedData);
             } else {
-                console.error("API did not return an array:", data);
                 setTicketTypes([]);
             }
         } catch (error) {
@@ -131,7 +147,6 @@ const SettingsPage = () => {
     };
 
     const fetchCompanies = async () => {
-        // Mock or real fetch for superadmin
         setCompanies([
             { id: 1, name: 'TechSolutions Inc.' },
             { id: 2, name: 'Global Logistics' },
@@ -257,7 +272,7 @@ const SettingsPage = () => {
                                     </div>
                                     <div
                                         onClick={async () => {
-                                            const updated = { ...emailConfig, is_active: !emailConfig.is_active };
+                                            const updated = { ...emailConfig, isActive: !emailConfig.isActive };
                                             setEmailConfig(updated);
                                             const userInfo = localStorage.getItem('userInfo');
                                             const token = userInfo ? JSON.parse(userInfo).token : null;
@@ -270,11 +285,14 @@ const SettingsPage = () => {
                                                     },
                                                     body: JSON.stringify(updated)
                                                 });
-                                            } catch (e) { console.error(e); }
+                                            } catch (e) {
+                                                console.error(e);
+                                                setEmailConfig(emailConfig); // Rollback on error
+                                            }
                                         }}
-                                        className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${emailConfig.is_active ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                        className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${emailConfig.isActive ? 'bg-blue-600' : 'bg-gray-600'}`}
                                     >
-                                        <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${emailConfig.is_active ? 'right-1' : 'left-1'}`}></div>
+                                        <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${emailConfig.isActive ? 'right-1' : 'left-1'}`}></div>
                                     </div>
                                 </div>
                             </div>
@@ -331,8 +349,8 @@ const SettingsPage = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                value={emailConfig.smtp_host}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_host: e.target.value })}
+                                                value={emailConfig.smtpHost}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpHost: e.target.value })}
                                                 className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
@@ -341,8 +359,8 @@ const SettingsPage = () => {
                                             <input
                                                 type="number"
                                                 required
-                                                value={emailConfig.smtp_port}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_port: e.target.value })}
+                                                value={emailConfig.smtpPort}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpPort: parseInt(e.target.value) })}
                                                 className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
@@ -353,8 +371,8 @@ const SettingsPage = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                value={emailConfig.smtp_user}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_user: e.target.value })}
+                                                value={emailConfig.smtpUser}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpUser: e.target.value })}
                                                 className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
@@ -362,12 +380,22 @@ const SettingsPage = () => {
                                             <label className="text-sm text-text-muted block mb-1">Contraseña SMTP</label>
                                             <input
                                                 type="password"
-                                                value={emailConfig.smtp_pass}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_pass: e.target.value })}
+                                                value={emailConfig.smtpPass}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpPass: e.target.value })}
                                                 className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                                 placeholder="******"
                                             />
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-text-muted block mb-1">Email de Remitente</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={emailConfig.senderEmail}
+                                            onChange={e => setEmailConfig({ ...emailConfig, senderEmail: e.target.value })}
+                                            className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
+                                        />
                                     </div>
                                     <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">
                                         Guardar Configuración
@@ -449,13 +477,13 @@ const SettingsPage = () => {
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-text-main font-medium">{type.name}</span>
-                                                    {(type.isGlobal || type.is_global) && (
+                                                    {type.isGlobal && (
                                                         <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">Global</span>
                                                     )}
                                                 </div>
                                                 <div className="text-xs text-text-muted mt-1 flex gap-4">
-                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.slaResponse !== undefined ? type.slaResponse : type.sla_response}h</span>
-                                                    <span className="flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Res: {type.slaResolution !== undefined ? type.slaResolution : type.sla_resolution}h</span>
+                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.slaResponse}h</span>
+                                                    <span className="flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Res: {type.slaResolution}h</span>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">

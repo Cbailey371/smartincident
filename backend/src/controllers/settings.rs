@@ -13,6 +13,7 @@ use sea_orm::{entity::*, EntityTrait};
 use chrono::Utc;
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NotificationConfigRequest {
     pub smtp_host: String,
     pub smtp_port: i32,
