@@ -54,6 +54,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "tusociosmart API (Rust Edition)" }))
         .nest("/api", routes::api_routes())
+        .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(layer)
         .layer(cors)
         .layer(axum::Extension(state.clone()))

@@ -1,5 +1,4 @@
 use axum::Router;
-use tower_http::services::ServeDir;
 use crate::AppState;
 
 pub mod auth;
@@ -20,5 +19,4 @@ pub fn api_routes() -> Router<AppState> {
         .nest("/ticket-types", ticket_type::routes())
         .nest("/users", user::routes())
         .nest("/dashboard", dashboard::routes())
-        .nest_service("/uploads", ServeDir::new("uploads"))
 }
