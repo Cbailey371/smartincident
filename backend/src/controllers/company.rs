@@ -6,15 +6,15 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::company;
+use crate::models::{company, user, incident};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait};
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 
 pub async fn get_all_companies(
     State(state): State<AppState>,
     user: AuthUser,
-) -> Result<Json<Vec<company::Model>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     if user.user.role != "superadmin" {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Only superadmin can list companies"}))));
     }
@@ -24,7 +24,28 @@ pub async fn get_all_companies(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(companies))
+    let mut result: Vec<Value> = Vec::new();
+
+    for c in companies {
+        let user_count = user::Entity::find()
+            .filter(user::Column::CompanyId.eq(c.id))
+            .count(&state.db)
+            .await
+            .unwrap_or(0);
+
+        let incident_count = incident::Entity::find()
+            .filter(incident::Column::CompanyId.eq(c.id))
+            .count(&state.db)
+            .await
+            .unwrap_or(0);
+
+        let mut company_val = json!(c);
+        company_val["usersCount"] = json!(user_count);
+        company_val["ticketsCount"] = json!(incident_count);
+        result.push(company_val);
+    }
+
+    Ok(Json(json!(result)))
 }
 
 #[derive(Deserialize)]
