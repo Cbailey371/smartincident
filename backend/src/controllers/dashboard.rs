@@ -6,7 +6,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::incident;
+use crate::models::{incident, company};
 use crate::middleware::auth::AuthUser;
 use sea_orm::*;
 
@@ -62,37 +62,45 @@ pub async fn get_dashboard_metrics(
     // Let's do simple separate queries for metrics to be robust.
 
     // 1. All incidents matching criteria
-    let incidents = query.all(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+    let items = query
+        .find_with_related(company::Entity)
+        .all(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    // Calculate metrics in memory (good enough for small scale)
-    let active = incidents.iter().filter(|i| i.status != "resolved" && i.status != "closed").count();
-    let critical = incidents.iter().filter(|i| i.priority == "high" || i.priority == "critical").count();
-    // overdue logic implies SLA check, for now simple placeholder or status check
-    let overdue = incidents.iter().filter(|i| i.status == "overdue").count(); 
-    let new_today = incidents.iter().count(); // Check created_at vs today if needed, for MVP returning total or filtered list count
+    // Calculate metrics in memory
+    let active = items.iter().filter(|(i, _)| i.status != "resolved" && i.status != "closed").count();
+    let critical = items.iter().filter(|(i, _)| i.priority == "high" || i.priority == "critical").count();
+    let overdue = items.iter().filter(|(i, _)| i.status == "overdue").count(); 
+    let new_today = items.len();
 
     // recent incidents (last 5)
-    let recent_incidents: Vec<Value> = incidents.iter()
+    let recent_incidents: Vec<Value> = items.iter()
         .rev()
         .take(5)
-        .map(|i| json!({
-            "id": i.id,
-            "ticket_code": i.ticket_code,
-            "title": i.title,
-            "status": i.status,
-            "createdAt": i.created_at.to_string(), // ISO format
-            // "company": ... we would need to fetch company name or join
-        }))
+        .map(|(i, companies)| {
+            let company_name = companies.first().map(|c| c.name.clone()).unwrap_or_else(|| "N/A".into());
+            json!({
+                "id": i.id,
+                "ticket_code": i.ticket_code,
+                "title": i.title,
+                "status": i.status,
+                "createdAt": i.created_at.to_rfc3339(),
+                "company": {
+                    "name": company_name
+                }
+            })
+        })
         .collect();
 
     let metrics = json!({
         "active": active,
         "critical": critical,
-        "slaCompliance": "100%", // Placeholder
-        "mttr": "2h 30m", // Placeholder
+        "slaCompliance": "100%",
+        "mttr": "2h 30m",
         "overdue": overdue,
         "newToday": new_today,
-        "backlog": active // Same as active?
+        "backlog": active
     });
 
     Ok(Json(json!({
