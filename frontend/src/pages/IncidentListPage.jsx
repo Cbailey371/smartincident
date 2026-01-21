@@ -39,7 +39,6 @@ const IncidentListPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchIncidents();
         fetchTicketTypes();
         if (['superadmin', 'agent'].includes(user?.role)) {
             fetchUsers();
@@ -53,6 +52,10 @@ const IncidentListPage = () => {
             setShowModal(true);
         }
     }, [user, location.state]);
+
+    useEffect(() => {
+        fetchIncidents();
+    }, [user, filterStatus, filterPriority, filterAssignee, filterCompany]);
 
     const fetchUsers = async () => {
         try {
@@ -86,7 +89,19 @@ const IncidentListPage = () => {
         try {
             const userInfo = localStorage.getItem('userInfo');
             const token = userInfo ? JSON.parse(userInfo).token : null;
-            const res = await fetch('/api/incidents?status=open,in_progress,resolved', {
+
+            const params = new URLSearchParams();
+            if (filterStatus === 'all') {
+                params.append('status', 'open,in_progress,resolved');
+            } else {
+                params.append('status', filterStatus);
+            }
+            if (filterPriority !== 'all') params.append('priority', filterPriority);
+            if (filterAssignee !== 'all') params.append('assigneeId', filterAssignee);
+            if (filterCompany !== 'all') params.append('companyId', filterCompany);
+            if (searchTerm) params.append('ticketCode', searchTerm);
+
+            const res = await fetch(`/api/incidents?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();

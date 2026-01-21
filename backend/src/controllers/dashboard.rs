@@ -37,15 +37,19 @@ pub async fn get_dashboard_metrics(
 
     // Filter by role
     match user.user.role.as_str() {
-        "superadmin" => {
+        "superadmin" | "agent" => {
             if let Some(cid) = params.company_id {
                 query = query.filter(incident::Column::CompanyId.eq(cid));
             }
         },
-        _ => {
-            // Limited view for others? Or allow read for analytics?
-            // For now let's allow read if authorized
-        }
+        "client" => {
+            if let Some(cid) = user.user.company_id {
+                query = query.filter(incident::Column::CompanyId.eq(cid));
+            } else {
+                query = query.filter(incident::Column::ReporterId.eq(user.user.id));
+            }
+        },
+        _ => return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized role"})))),
     }
 
     // Use query logic to get counts. 

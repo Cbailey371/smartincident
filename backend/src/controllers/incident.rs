@@ -43,7 +43,11 @@ pub async fn get_all_incidents(
             }
         }
         "client" => {
-            query = query.filter(incident::Column::ReporterId.eq(user.user.id));
+            if let Some(cid) = user.user.company_id {
+                query = query.filter(incident::Column::CompanyId.eq(cid));
+            } else {
+                query = query.filter(incident::Column::ReporterId.eq(user.user.id));
+            }
         }
         "agent" => {
             query = query.filter(incident::Column::AssigneeId.eq(user.user.id));

@@ -34,7 +34,7 @@ const HistoryPage = () => {
     // Fetch Incidents whenever filters change (Server-side filtering)
     useEffect(() => {
         fetchHistory();
-    }, [filterPriority, filterAssignee, filterCompany]);
+    }, [user, filterPriority, filterAssignee, filterCompany]);
     // Note: startDate, endDate, searchTerm might need debounce or specific "Apply" button to avoid too many requests, 
     // or just fetch on effect for now if traffic is low.
 
