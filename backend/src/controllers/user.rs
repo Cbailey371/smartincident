@@ -6,9 +6,9 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{user, company};
+use crate::models::{user, company, incident};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait, sea_query::Expr};
 use chrono::Utc;
 use bcrypt::{hash, DEFAULT_COST};
 
@@ -184,7 +184,7 @@ pub async fn delete_user(
 
     // 1. Handle incidents assigned to this user
     incident::Entity::update_many()
-        .col_expr(incident::Column::AssigneeId, Expr::value(Value::Int(None)))
+        .col_expr(incident::Column::AssigneeId, Expr::value(sea_orm::Value::Int(None)))
         .filter(incident::Column::AssigneeId.eq(id))
         .exec(&state.db)
         .await
