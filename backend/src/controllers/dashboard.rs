@@ -6,10 +6,9 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{incident, user};
+use crate::models::incident;
 use crate::middleware::auth::AuthUser;
 use sea_orm::*;
-use chrono::NaiveDate;
 
 #[derive(Deserialize)]
 pub struct DashboardQuery {

@@ -119,7 +119,7 @@ pub async fn reset_password(
         .ok_or((StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired token"}))))?;
 
     if let Some(expiry) = user.reset_token_expiry {
-        if expiry < Utc::now().into() {
+        if expiry.timestamp() < Utc::now().timestamp() {
             return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Token expired"}))));
         }
     }
