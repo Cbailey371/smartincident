@@ -43,8 +43,8 @@ pub async fn get_notification_config(
                 smtp_pass: "".into(),
                 sender_email: "".into(),
                 is_active: false,
-                created_at: Utc::now().naive_utc(),
-                updated_at: Utc::now().naive_utc(),
+                created_at: Utc::now().into(),
+                updated_at: Utc::now().into(),
             }
         });
 
@@ -81,7 +81,7 @@ pub async fn update_notification_config(
             }
             am.sender_email = Set(payload.sender_email);
             am.is_active = Set(payload.is_active);
-            am.updated_at = Set(Utc::now().naive_utc());
+            am.updated_at = Set(Utc::now().into());
             am
         },
         None => notification_config::ActiveModel {
@@ -91,8 +91,8 @@ pub async fn update_notification_config(
             smtp_pass: Set(payload.smtp_pass),
             sender_email: Set(payload.sender_email),
             is_active: Set(payload.is_active),
-            created_at: Set(Utc::now().naive_utc()),
-            updated_at: Set(Utc::now().naive_utc()),
+            created_at: Set(Utc::now().into()),
+            updated_at: Set(Utc::now().into()),
             ..Default::default()
         }
     };
