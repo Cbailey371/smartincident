@@ -20,7 +20,7 @@ const UserListPage = () => {
         email: '',
         password: '',
         role: 'client',
-        company_id: ''
+        companyId: ''
     });
 
     useEffect(() => {
@@ -38,7 +38,7 @@ const UserListPage = () => {
                 email: editingUser.email,
                 password: '',
                 role: editingUser.role,
-                company_id: editingUser.company_id || ''
+                companyId: editingUser.companyId || ''
             });
             setShowModal(true);
         }
@@ -80,7 +80,7 @@ const UserListPage = () => {
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
         // Frontend Validation
-        if (['client', 'company_admin'].includes(formData.role) && !formData.company_id && user?.role === 'superadmin') {
+        if (['client', 'company_admin'].includes(formData.role) && !formData.companyId && user?.role === 'superadmin') {
             alert('Para Clientes y Administradores de Empresa, debes seleccionar una empresa.');
             return;
         }
@@ -95,13 +95,13 @@ const UserListPage = () => {
             // Clean up empty password if editing
             const payload = {
                 ...formData,
-                company_id: formData.company_id ? parseInt(formData.company_id) : null
+                companyId: formData.companyId ? parseInt(formData.companyId) : null
             };
             if (editingUser && !payload.password) delete payload.password;
 
             // Auto-assign company for Company Admins
             if (user?.role === 'company_admin') {
-                payload.company_id = user.company_id;
+                payload.companyId = user.companyId;
             }
 
             const res = await fetch(url, {
@@ -144,7 +144,7 @@ const UserListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingUser(null);
-        setFormData({ name: '', email: '', password: '', role: 'client', company_id: '' });
+        setFormData({ name: '', email: '', password: '', role: 'client', companyId: '' });
     };
 
     const filteredUsers = users.filter(u => {
@@ -152,7 +152,7 @@ const UserListPage = () => {
             u.email.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesRole = filterRole === 'all' ? true : u.role === filterRole;
-        const matchesCompany = filterCompany === 'all' ? true : (u.company_id || u.company?.id) === parseInt(filterCompany);
+        const matchesCompany = filterCompany === 'all' ? true : (u.companyId || u.company?.id) === parseInt(filterCompany);
 
         return matchesSearch && matchesRole && matchesCompany;
     });
@@ -372,8 +372,8 @@ const UserListPage = () => {
                                             {(formData.role === 'client' || formData.role === 'company_admin') && <span className="text-red-500 ml-1">*</span>}
                                         </label>
                                         <select
-                                            value={formData.company_id}
-                                            onChange={e => setFormData({ ...formData, company_id: e.target.value })}
+                                            value={formData.companyId}
+                                            onChange={e => setFormData({ ...formData, companyId: e.target.value })}
                                             disabled={user?.role === 'company_admin'} // Lock if Company Admin
                                             className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50"
                                         >

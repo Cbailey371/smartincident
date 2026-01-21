@@ -190,16 +190,16 @@ const IncidentListPage = () => {
 
     const filteredIncidents = incidents.filter(incident => {
         const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            incident.ticket_code?.toLowerCase().includes(searchTerm.toLowerCase());
+            incident.ticketCode?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = filterStatus === 'all' ? true : incident.status === filterStatus;
         const matchesPriority = filterPriority === 'all' ? true : incident.priority === filterPriority;
 
         // Handle IDs being numbers or objects
-        const assigneeId = incident.assignee_id || incident.assignee?.id;
+        const assigneeId = incident.assigneeId || incident.assignee?.id;
         const matchesAssignee = filterAssignee === 'all' ? true : assigneeId === parseInt(filterAssignee);
 
-        const companyId = incident.company_id || incident.company?.id;
+        const companyId = incident.companyId || incident.company?.id;
         const matchesCompany = filterCompany === 'all' ? true : companyId === parseInt(filterCompany);
 
         let matchesDate = true;
@@ -390,7 +390,7 @@ const IncidentListPage = () => {
                             ) : (
                                 filteredIncidents.map((incident) => (
                                     <tr key={incident.id} className="hover:bg-background/50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-text-muted">{incident.ticket_code || `#${incident.id}`}</td>
+                                        <td className="px-6 py-4 font-mono text-text-muted">{incident.ticketCode || `#${incident.id}`}</td>
                                         <td className="px-6 py-4">
                                             <Link to={`/incidents/${incident.id}`} className="font-medium text-text-main hover:text-blue-500 transition-colors block truncate w-64">
                                                 {incident.title}

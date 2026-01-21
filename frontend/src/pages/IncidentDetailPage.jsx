@@ -48,7 +48,7 @@ const IncidentDetailPage = () => {
             setEditData({
                 status: data.status,
                 priority: data.priority,
-                assignee_id: data.assignee_id || ''
+                assigneeId: data.assigneeId || ''
             });
             setLoading(false);
         } catch (error) {
@@ -203,7 +203,7 @@ const IncidentDetailPage = () => {
                 <div className="flex justify-between items-start mb-4 gap-4">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="font-mono text-text-muted text-sm">{incident.ticket_code || `#${incident.id}`}</span>
+                            <span className="font-mono text-text-muted text-sm">{incident.ticketCode || `#${incident.id}`}</span>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${incident.status === 'open' ? 'bg-primary/10 text-primary border-primary/20' :
                                 incident.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                     'bg-background text-text-muted border-border-color'
@@ -255,31 +255,31 @@ const IncidentDetailPage = () => {
                 <p className="text-text-muted mb-6 whitespace-pre-wrap">{incident.description}</p>
 
                 {/* Attachments Section */}
-                {incident.Attachments && incident.Attachments.length > 0 && (
+                {incident.attachments && incident.attachments.length > 0 && (
                     <div className="mb-6 p-4 bg-background/30 rounded-xl border border-border-color/50">
                         <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
                             <Paperclip className="w-3 h-3" /> Archivos Adjuntos
                         </h3>
                         <div className="flex flex-wrap gap-4">
-                            {incident.Attachments.filter(att => !att.comment_id).map(att => {
-                                const isImage = att.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                            {incident.attachments.filter(att => !att.commentId).map(att => {
+                                const isImage = att.filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                                 return (
                                     <div key={att.id} className="group relative">
                                         {/* Debug Log */ console.log('Attachment Path:', att.file_path)}
                                         {isImage ? (
                                             <div
-                                                onClick={() => setPreviewImage(`/${att.file_path.replace(/\\/g, '/')}`)}
+                                                onClick={() => setPreviewImage(`/${att.filePath.replace(/\\/g, '/')}`)}
                                                 className="cursor-pointer transition-transform hover:scale-105"
                                             >
                                                 <img
-                                                    src={`/${att.file_path.replace(/\\/g, '/')}`}
-                                                    alt={att.original_name}
+                                                    src={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                    alt={att.originalName}
                                                     className="w-24 h-24 object-cover rounded-lg border border-border-color shadow-sm group-hover:shadow-md"
                                                 />
                                             </div>
                                         ) : (
                                             <a
-                                                href={`/${att.file_path.replace(/\\/g, '/')}`}
+                                                href={`/${att.filePath.replace(/\\/g, '/')}`}
 
                                                 target="_blank"
                                                 rel="noopener noreferrer"
@@ -315,8 +315,8 @@ const IncidentDetailPage = () => {
                         </span>
                         {isEditing ? (
                             <select
-                                value={editData.assignee_id}
-                                onChange={e => setEditData({ ...editData, assignee_id: e.target.value })}
+                                value={editData.assigneeId}
+                                onChange={e => setEditData({ ...editData, assigneeId: e.target.value })}
                                 className="bg-background border border-border-color rounded px-2 py-1 text-text-main focus:outline-none"
                             >
                                 <option value="">Sin Asignar</option>
@@ -404,23 +404,23 @@ const IncidentDetailPage = () => {
                                             {comment.attachments && comment.attachments.length > 0 && (
                                                 <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                                                     {comment.attachments.map(att => {
-                                                        const isImage = att.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                                        const isImage = att.filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                                                         return (
                                                             <div key={att.id}>
                                                                 {isImage ? (
                                                                     <div
-                                                                        onClick={() => setPreviewImage(`/${att.file_path.replace(/\\/g, '/')}`)}
+                                                                        onClick={() => setPreviewImage(`/${att.filePath.replace(/\\/g, '/')}`)}
                                                                         className="cursor-pointer group"
                                                                     >
                                                                         <img
-                                                                            src={`/${att.file_path.replace(/\\/g, '/')}`}
-                                                                            alt={att.original_name}
+                                                                            src={`/${att.filePath.replace(/\\/g, '/')}`}
+                                                                            alt={att.originalName}
                                                                             className="w-full h-24 object-cover rounded-lg border border-border-color group-hover:opacity-90 transition-opacity"
                                                                         />
                                                                     </div>
                                                                 ) : (
                                                                     <a
-                                                                        href={`/${att.file_path.replace(/\\/g, '/')}`}
+                                                                        href={`/${att.filePath.replace(/\\/g, '/')}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs p-2 bg-background/50 rounded border border-border-color/50"

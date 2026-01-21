@@ -229,9 +229,9 @@ pub async fn create_incident(
 
 pub async fn get_incident_by_id(
     State(state): State<AppState>,
-    user: AuthUser,
+    user_auth: AuthUser,
     Path(id): Path<i32>,
-) -> Result<Json<incident::Model>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let incident = incident::Entity::find_by_id(id)
         .one(&state.db)
         .await
@@ -239,14 +239,40 @@ pub async fn get_incident_by_id(
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Incident not found"}))))?;
 
     // Authorization check
-    if user.user.role == "client" && incident.reporter_id != user.user.id {
+    if user_auth.user.role == "client" && incident.reporter_id != user_auth.user.id {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
-    if user.user.role == "company_admin" && incident.company_id != user.user.company_id.unwrap_or(0) {
+    if user_auth.user.role == "company_admin" && incident.company_id != user_auth.user.company_id.unwrap_or(0) {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
 
-    Ok(Json(incident))
+    let mut inc_val = json!(incident);
+
+    // Fetch Reporter
+    let reporter = user::Entity::find_by_id(incident.reporter_id).one(&state.db).await.unwrap_or(None);
+    inc_val["reporter"] = json!(reporter);
+
+    // Fetch Assignee
+    if let Some(aid) = incident.assignee_id {
+        let assignee = user::Entity::find_by_id(aid).one(&state.db).await.unwrap_or(None);
+        inc_val["assignee"] = json!(assignee);
+    }
+
+    // Fetch Company
+    if incident.company_id != 0 {
+        let comp = company::Entity::find_by_id(incident.company_id).one(&state.db).await.unwrap_or(None);
+        inc_val["company"] = json!(comp);
+    }
+
+    // Fetch Attachments
+    let attachments = attachment::Entity::find()
+        .filter(attachment::Column::IncidentId.eq(incident.id))
+        .all(&state.db)
+        .await
+        .unwrap_or_default();
+    inc_val["attachments"] = json!(attachments);
+
+    Ok(Json(inc_val))
 }
 
 #[derive(Deserialize)]

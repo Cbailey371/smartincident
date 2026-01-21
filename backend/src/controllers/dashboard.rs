@@ -82,7 +82,7 @@ pub async fn get_dashboard_metrics(
             let company_name = companies.first().map(|c| c.name.clone()).unwrap_or_else(|| "N/A".into());
             json!({
                 "id": i.id,
-                "ticket_code": i.ticket_code,
+                "ticketCode": i.ticket_code,
                 "title": i.title,
                 "status": i.status,
                 "createdAt": i.created_at.to_rfc3339(),

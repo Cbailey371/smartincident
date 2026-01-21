@@ -103,7 +103,7 @@ const HistoryPage = () => {
     // So we will filter `incidents` (which are already closed/resolved) by Date and Title here.
     const filteredIncidents = incidents.filter(incident => {
         const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            incident.ticket_code?.toLowerCase().includes(searchTerm.toLowerCase());
+            incident.ticketCode?.toLowerCase().includes(searchTerm.toLowerCase());
 
         // Date Logic
         let matchesDate = true;
@@ -288,7 +288,7 @@ const HistoryPage = () => {
                             ) : (
                                 filteredIncidents.map((incident) => (
                                     <tr key={incident.id} className="hover:bg-background/50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-xs">{incident.ticket_code || `#${incident.id}`}</td>
+                                        <td className="px-6 py-4 font-mono text-xs">{incident.ticketCode || `#${incident.id}`}</td>
                                         <td className="px-6 py-4">
                                             <Link to={`/incidents/${incident.id}`} className="font-medium text-text-main hover:text-primary transition-colors block truncate w-64">
                                                 {incident.title}

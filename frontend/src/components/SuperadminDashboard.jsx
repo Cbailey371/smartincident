@@ -258,7 +258,7 @@ const SuperadminDashboard = () => {
                                     variants={itemVariants}
                                     className="hover:bg-background/30 transition-colors"
                                 >
-                                    <td className="px-6 py-4 font-mono">#{incident.ticket_code || incident.id}</td>
+                                    <td className="px-6 py-4 font-mono">#{incident.ticketCode || incident.id}</td>
                                     <td className="px-6 py-4 font-medium text-text-main">{incident.title}</td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${incident.status === 'open' ? 'bg-primary/10 text-primary border-primary/20' :

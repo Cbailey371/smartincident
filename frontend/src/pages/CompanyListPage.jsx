@@ -16,7 +16,7 @@ const CompanyListPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         address: '',
-        contact_email: '',
+        contactEmail: '',
         status: 'active'
     });
 
@@ -29,7 +29,7 @@ const CompanyListPage = () => {
             setFormData({
                 name: editingCompany.name,
                 address: editingCompany.address || '',
-                contact_email: editingCompany.contact_email || '',
+                contactEmail: editingCompany.contactEmail || '',
                 status: editingCompany.status
             });
             setShowModal(true);
@@ -76,7 +76,7 @@ const CompanyListPage = () => {
             if (res.ok) {
                 setShowModal(false);
                 setEditingCompany(null);
-                setFormData({ name: '', address: '', contact_email: '', status: 'active' });
+                setFormData({ name: '', address: '', contactEmail: '', status: 'active' });
                 fetchCompanies();
             }
         } catch (error) {
@@ -107,7 +107,7 @@ const CompanyListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingCompany(null);
-        setFormData({ name: '', address: '', contact_email: '', status: 'active' });
+        setFormData({ name: '', address: '', contactEmail: '', status: 'active' });
     };
 
     const toggleStatus = async (company) => {
@@ -125,7 +125,7 @@ const CompanyListPage = () => {
                 body: JSON.stringify({
                     name: company.name,
                     address: company.address,
-                    contact_email: company.contact_email,
+                    contactEmail: company.contactEmail,
                     status: newStatus
                 })
             });
@@ -235,7 +235,7 @@ const CompanyListPage = () => {
                                             </div>
                                             <div>
                                                 <div className="font-medium text-text-main">{company.name}</div>
-                                                <div className="text-xs text-text-muted">{company.contact_email || 'Sin email'}</div>
+                                                <div className="text-xs text-text-muted">{company.contactEmail || 'Sin email'}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -312,8 +312,8 @@ const CompanyListPage = () => {
                                 <label className="text-sm font-medium text-text-muted">Email de Contacto</label>
                                 <input
                                     type="email"
-                                    value={formData.contact_email}
-                                    onChange={e => setFormData({ ...formData, contact_email: e.target.value })}
+                                    value={formData.contactEmail}
+                                    onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
                                     className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     placeholder="contacto@empresa.com"
                                 />

@@ -92,7 +92,7 @@ const AgentDashboard = () => {
                                         variants={itemVariants}
                                         className="hover:bg-background/30 transition-colors"
                                     >
-                                        <td className="px-6 py-4 font-mono">#{ticket.ticket_code || ticket.id}</td>
+                                        <td className="px-6 py-4 font-mono">#{ticket.ticketCode || ticket.id}</td>
                                         <td className="px-6 py-4 font-medium text-text-main">{ticket.title}</td>
                                         <td className="px-6 py-4">
                                             <span className={`text-xs font-bold uppercase ${ticket.priority === 'high' ? 'text-orange-500' :

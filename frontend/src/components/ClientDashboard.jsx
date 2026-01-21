@@ -100,7 +100,7 @@ const ClientDashboard = () => {
                                         {ticket.title}
                                     </Link>
                                     <div className="flex gap-3 text-xs text-text-muted">
-                                        <span className="font-mono">#{ticket.ticket_code || ticket.id}</span>
+                                        <span className="font-mono">#{ticket.ticketCode || ticket.id}</span>
                                         <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
