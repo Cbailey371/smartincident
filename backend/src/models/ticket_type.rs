@@ -9,6 +9,9 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub description: Option<String>,
+    pub sla_response: i32,
+    pub sla_resolution: i32,
+    pub is_global: bool,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
 }

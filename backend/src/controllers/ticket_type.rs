@@ -24,9 +24,13 @@ pub async fn get_all_ticket_types(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateTicketTypeRequest {
     pub name: String,
     pub description: Option<String>,
+    pub sla_response: i32,
+    pub sla_resolution: i32,
+    pub is_global: bool,
 }
 
 pub async fn create_ticket_type(
@@ -41,6 +45,9 @@ pub async fn create_ticket_type(
     let new_type = ticket_type::ActiveModel {
         name: Set(payload.name),
         description: Set(payload.description),
+        sla_response: Set(payload.sla_response),
+        sla_resolution: Set(payload.sla_resolution),
+        is_global: Set(payload.is_global),
         created_at: Set(Utc::now().into()),
         updated_at: Set(Utc::now().into()),
         ..Default::default()
@@ -73,6 +80,9 @@ pub async fn update_ticket_type(
     let mut am: ticket_type::ActiveModel = tt.into();
     am.name = Set(payload.name);
     am.description = Set(payload.description);
+    am.sla_response = Set(payload.sla_response);
+    am.sla_resolution = Set(payload.sla_resolution);
+    am.is_global = Set(payload.is_global);
     am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)

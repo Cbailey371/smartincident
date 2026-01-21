@@ -447,7 +447,7 @@ const SettingsPage = () => {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">SLA 1ra Respuesta (min)</label>
+                                                <label className="text-xs text-text-muted block mb-1">SLA 1ra Respuesta (horas)</label>
                                                 <input
                                                     type="number"
                                                     value={newType.sla_response}
@@ -485,7 +485,7 @@ const SettingsPage = () => {
                                                     )}
                                                 </div>
                                                 <div className="text-xs text-text-muted mt-1 flex gap-4">
-                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.sla_response}m</span>
+                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.sla_response}h</span>
                                                     <span className="flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Res: {type.sla_resolution}h</span>
                                                 </div>
                                             </div>
