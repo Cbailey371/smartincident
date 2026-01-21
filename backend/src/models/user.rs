@@ -9,13 +9,13 @@ pub struct Model {
     pub name: String,
     #[sea_orm(unique)]
     pub email: String,
-    pub role: String, // Usaremos String para los ENUMs iniciales por simplicidad
+    pub role: String,
     pub password_hash: Option<String>,
     pub reset_token: Option<String>,
-    pub reset_token_expiry: Option<DateTime>,
+    pub reset_token_expiry: Option<DateTimeWithTimeZone>,
     pub company_id: Option<i32>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

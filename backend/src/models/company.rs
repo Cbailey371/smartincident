@@ -10,8 +10,8 @@ pub struct Model {
     pub status: String,
     pub address: Option<String>,
     pub contact_email: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

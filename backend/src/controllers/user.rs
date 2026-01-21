@@ -69,8 +69,8 @@ pub async fn create_user(
         role: Set(payload.role),
         password_hash: Set(password_hash),
         company_id: Set(payload.company_id),
-        created_at: Set(Utc::now().naive_utc()),
-        updated_at: Set(Utc::now().naive_utc()),
+        created_at: Set(Utc::now().into()),
+        updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
 
@@ -129,7 +129,7 @@ pub async fn update_user(
         }
     }
     
-    am.updated_at = Set(Utc::now().naive_utc());
+    am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)
         .await

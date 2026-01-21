@@ -12,8 +12,8 @@ pub struct Model {
     pub smtp_pass: String,
     pub sender_email: String,
     pub is_active: bool,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

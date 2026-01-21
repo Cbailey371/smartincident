@@ -129,6 +129,10 @@ pub async fn create_incident(
     let code_prefix = if company_id != 0 { format!("INC-{}", company_id) } else { "INC-GLB".into() };
     let ticket_code = format!("{}-{}", code_prefix, timestamp);
 
+    if type_id.is_none() {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Debe seleccionar un Tipo de Incidente"}))));
+    }
+
     let new_incident = incident::ActiveModel {
         ticket_code: Set(Some(ticket_code)),
         title: Set(title),
@@ -137,9 +141,9 @@ pub async fn create_incident(
         status: Set("open".into()),
         reporter_id: Set(user.user.id),
         company_id: Set(company_id),
-        type_id: Set(type_id.unwrap_or(0)),
-        created_at: Set(Utc::now().naive_utc()),
-        updated_at: Set(Utc::now().naive_utc()),
+        type_id: Set(type_id.unwrap()), // Safe now
+        created_at: Set(Utc::now().into()),
+        updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
 

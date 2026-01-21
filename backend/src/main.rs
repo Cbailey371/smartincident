@@ -104,8 +104,8 @@ async fn init_db(db: &DatabaseConnection) {
             email: Set(email.into()),
             role: Set("superadmin".into()),
             password_hash: Set(Some(hashed)),
-            created_at: Set(Utc::now().naive_utc()),
-            updated_at: Set(Utc::now().naive_utc()),
+            created_at: Set(Utc::now().into()),
+            updated_at: Set(Utc::now().into()),
             ..Default::default()
         };
         

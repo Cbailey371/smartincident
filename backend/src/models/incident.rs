@@ -16,8 +16,8 @@ pub struct Model {
     pub assignee_id: Option<i32>,
     pub company_id: i32,
     pub type_id: i32,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
