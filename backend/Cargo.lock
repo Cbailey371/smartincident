@@ -2558,6 +2558,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
+name = "smartincident-backend-rust"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "bcrypt",
+ "chrono",
+ "csv",
+ "dotenvy",
+ "jsonwebtoken",
+ "lettre",
+ "reqwest",
+ "rust_xlsxwriter",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "socketioxide",
+ "sqlx",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "socket2"
 version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3362,31 +3387,6 @@ dependencies = [
  "sha1",
  "thiserror 1.0.69",
  "utf-8",
-]
-
-[[package]]
-name = "tusociosmart-backend-rust"
-version = "0.1.0"
-dependencies = [
- "axum",
- "bcrypt",
- "chrono",
- "csv",
- "dotenvy",
- "jsonwebtoken",
- "lettre",
- "reqwest",
- "rust_xlsxwriter",
- "sea-orm",
- "serde",
- "serde_json",
- "socketioxide",
- "sqlx",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]

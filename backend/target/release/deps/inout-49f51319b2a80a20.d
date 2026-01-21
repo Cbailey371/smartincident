@@ -1,0 +1,11 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/inout-49f51319b2a80a20.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/errors.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout_buf.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/reserved.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libinout-49f51319b2a80a20.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/errors.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout_buf.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/reserved.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libinout-49f51319b2a80a20.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/errors.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout_buf.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/reserved.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/errors.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/inout_buf.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inout-0.1.4/src/reserved.rs:

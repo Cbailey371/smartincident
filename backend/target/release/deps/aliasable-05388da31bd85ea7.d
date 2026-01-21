@@ -1,0 +1,11 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/aliasable-05388da31bd85ea7.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/mut_ref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/boxed.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/string.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/vec.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libaliasable-05388da31bd85ea7.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/mut_ref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/boxed.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/string.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/vec.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libaliasable-05388da31bd85ea7.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/mut_ref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/boxed.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/string.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/vec.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/mut_ref.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/boxed.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/string.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/aliasable-0.1.3/src/vec.rs:

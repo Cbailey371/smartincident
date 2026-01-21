@@ -8,11 +8,7 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{company, user, incident};
 use crate::middleware::auth::AuthUser;
-<<<<<<< HEAD
-use sea_orm::{entity::*, EntityTrait, ColumnTrait};
-=======
-use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait};
->>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
+use sea_orm::{entity::*, EntityTrait, ColumnTrait, QueryFilter, PaginatorTrait};
 use chrono::Utc;
 
 pub async fn get_all_companies(

@@ -287,19 +287,11 @@ const IncidentDetailPage = () => {
                                             </div>
                                         ) : (
                                             <a
-<<<<<<< HEAD
-                                                href={`/${att.file_path.replace(/\\/g, '/')}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                download={att.original_name}
-                                                className="block transition-transform hover:scale-105"
-=======
                                                 href={`/${att.filePath.replace(/\\/g, '/')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 download={att.originalName}
                                                 className="flex flex-col items-center justify-center w-24 h-24 bg-background border border-border-color rounded-lg hover:bg-primary/5 transition-all group"
->>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
                                             >
                                                 <div className="relative">
                                                     <FileText className="w-8 h-8 text-text-muted group-hover:text-primary mb-1" />
@@ -457,13 +449,8 @@ const IncidentDetailPage = () => {
                                                                         href={`/${att.filePath.replace(/\\/g, '/')}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-<<<<<<< HEAD
-                                                                        download={att.original_name}
-                                                                        className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs p-2 bg-background/50 rounded border border-border-color/50"
-=======
                                                                         download={att.originalName}
                                                                         className="flex items-center gap-2 p-2 bg-background/50 rounded-lg border border-border-color/50 hover:border-primary/50 hover:bg-primary/5 transition-all group"
->>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
                                                                     >
                                                                         <div className="bg-primary/10 p-1.5 rounded text-primary">
                                                                             <File className="w-4 h-4" />

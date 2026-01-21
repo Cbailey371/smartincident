@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{ticket_type, incident};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait, ColumnTrait};
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 
 pub async fn get_all_ticket_types(

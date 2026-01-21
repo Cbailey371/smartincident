@@ -1,0 +1,11 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/socket2-a773f4768695a511.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockaddr.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/socket.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sys/unix.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libsocket2-a773f4768695a511.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockaddr.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/socket.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sys/unix.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libsocket2-a773f4768695a511.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockaddr.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/socket.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockref.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sys/unix.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockaddr.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/socket.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sockref.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.5.10/src/sys/unix.rs:

@@ -1,0 +1,11 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/matchit-57ac86e05883ac22.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/error.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/params.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/router.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/tree.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libmatchit-57ac86e05883ac22.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/error.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/params.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/router.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/tree.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/libmatchit-57ac86e05883ac22.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/error.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/params.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/router.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/tree.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/error.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/params.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/router.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/matchit-0.7.3/src/tree.rs:

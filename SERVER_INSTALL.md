@@ -172,7 +172,6 @@ sudo certbot --nginx -d smartincident.tusociosmart.com
 sudo certbot renew --dry-run
 ```
 
-<<<<<<< HEAD
 ## 11. Configuración de Firewall (UFW)
 Es fundamental proteger los puertos del servidor.
 
@@ -187,9 +186,6 @@ sudo ufw allow 'Nginx Full'
 # Activar Firewall
 sudo ufw enable
 ```
-
-=======
->>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
 ## 12. Permisos Finales
 ```bash
 # Asegurar que Nginx (www-data) pueda leer los archivos

@@ -1,0 +1,10 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/lock_api-6c025f9e218820ec.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/mutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/remutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/rwlock.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/liblock_api-6c025f9e218820ec.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/mutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/remutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/rwlock.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/release/deps/liblock_api-6c025f9e218820ec.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/mutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/remutex.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/rwlock.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/mutex.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/remutex.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lock_api-0.4.14/src/rwlock.rs:
