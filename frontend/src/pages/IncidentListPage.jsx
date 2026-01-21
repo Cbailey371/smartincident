@@ -144,7 +144,7 @@ const IncidentListPage = () => {
             data.append('companyId', parseInt(formData.company_id));
         }
         if (selectedFile) {
-            data.append('image', selectedFile);
+            data.append('file', selectedFile);
         }
 
         try {
