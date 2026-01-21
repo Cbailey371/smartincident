@@ -33,7 +33,7 @@ pub async fn get_all_incidents(
 
     // Role-based filtering
     match user.user.role.as_str() {
-        "superadmin" => {
+        "superadmin" | "agent" => {
             if let Some(cid) = params.company_id {
                 if cid != "all" {
                     if let Ok(id) = cid.parse::<i32>() {
@@ -48,9 +48,6 @@ pub async fn get_all_incidents(
             } else {
                 query = query.filter(incident::Column::ReporterId.eq(user.user.id));
             }
-        }
-        "agent" => {
-            query = query.filter(incident::Column::AssigneeId.eq(user.user.id));
         }
         _ => return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized role"})))),
     }
