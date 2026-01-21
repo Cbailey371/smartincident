@@ -24,13 +24,13 @@ pub async fn get_all_ticket_types(
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct CreateTicketTypeRequest {
     pub name: String,
     pub description: Option<String>,
     pub sla_response: i32,
     pub sla_resolution: i32,
     pub is_global: bool,
+    pub companies: Option<Value>, // Ignore if sent
 }
 
 pub async fn create_ticket_type(

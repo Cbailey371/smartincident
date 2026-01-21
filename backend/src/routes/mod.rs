@@ -9,6 +9,7 @@ pub mod comment;
 pub mod ticket_type;
 pub mod user;
 pub mod dashboard;
+pub mod settings;
 
 pub fn api_routes() -> Router<AppState> {
     Router::new()
@@ -19,4 +20,5 @@ pub fn api_routes() -> Router<AppState> {
         .nest("/ticket-types", ticket_type::routes())
         .nest("/users", user::routes())
         .nest("/dashboard", dashboard::routes())
+        .nest("/settings", settings::routes())
 }

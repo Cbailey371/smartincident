@@ -28,7 +28,7 @@ const SettingsPage = () => {
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
     // Email Config State
-    const [emailConfig, setEmailConfig] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_pass: '', sender_email: '' });
+    const [emailConfig, setEmailConfig] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_pass: '', sender_email: '', is_active: false });
 
     const fetchEmailConfig = async () => {
         const userInfo = localStorage.getItem('userInfo');
@@ -112,7 +112,12 @@ const SettingsPage = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            setTicketTypes(data);
+            if (Array.isArray(data)) {
+                setTicketTypes(data);
+            } else {
+                console.error("API did not return an array:", data);
+                setTicketTypes([]);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -240,8 +245,29 @@ const SettingsPage = () => {
                                         <p className="text-text-main font-medium">Alertas por Email</p>
                                         <p className="text-sm text-text-muted">Recibir correos cuando se asigna un ticket</p>
                                     </div>
-                                    <div className="w-11 h-6 bg-blue-600 rounded-full cursor-pointer relative">
-                                        <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                    <div
+                                        onClick={async () => {
+                                            if (user?.role !== 'superadmin') return;
+                                            const updated = { ...emailConfig, is_active: !emailConfig.is_active };
+                                            setEmailConfig(updated);
+
+                                            // Auto-save on toggle
+                                            const userInfo = localStorage.getItem('userInfo');
+                                            const token = userInfo ? JSON.parse(userInfo).token : null;
+                                            try {
+                                                await fetch('/api/settings/notifications', {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': `Bearer ${token}`
+                                                    },
+                                                    body: JSON.stringify(updated)
+                                                });
+                                            } catch (e) { console.error(e); }
+                                        }}
+                                        className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${emailConfig.is_active ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                    >
+                                        <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${emailConfig.is_active ? 'right-1' : 'left-1'}`}></div>
                                     </div>
                                 </div>
                             </div>
@@ -475,7 +501,7 @@ const SettingsPage = () => {
                                 )}
 
                                 <div className="space-y-3">
-                                    {ticketTypes.map(type => (
+                                    {Array.isArray(ticketTypes) && ticketTypes.map(type => (
                                         <div key={type.id} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-border-color hover:border-border-color transition-colors">
                                             <div>
                                                 <div className="flex items-center gap-2">
