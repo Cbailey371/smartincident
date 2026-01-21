@@ -50,6 +50,7 @@ async fn main() {
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(layer)
         .layer(cors)
+        .layer(axum::extract::DefaultBodyLimit::max(50 * 1024 * 1024)) // 50MB
         .layer(axum::Extension(state.clone()))
         .with_state(state);
 

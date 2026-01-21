@@ -6,9 +6,9 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::company;
+use crate::models::{company, user, incident};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait};
+use sea_orm::{entity::*, EntityTrait, ColumnTrait};
 use chrono::Utc;
 
 pub async fn get_all_companies(
@@ -122,6 +122,21 @@ pub async fn delete_company(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Company not found"}))))?;
 
+    // 1. Delete all incidents of this company
+    incident::Entity::delete_many()
+        .filter(incident::Column::CompanyId.eq(id))
+        .exec(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+
+    // 2. Delete all users of this company
+    user::Entity::delete_many()
+        .filter(user::Column::CompanyId.eq(id))
+        .exec(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related users: {}", e)}))))?;
+
+    // 3. Delete the company
     company.delete(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;

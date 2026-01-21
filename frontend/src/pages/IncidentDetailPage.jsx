@@ -280,9 +280,9 @@ const IncidentDetailPage = () => {
                                         ) : (
                                             <a
                                                 href={`/${att.file_path.replace(/\\/g, '/')}`}
-
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                download={att.original_name}
                                                 className="block transition-transform hover:scale-105"
                                             >
                                                 <div className="w-24 h-24 flex flex-col items-center justify-center bg-background border border-border-color rounded-lg group-hover:bg-primary/5 transition-colors">
@@ -423,6 +423,7 @@ const IncidentDetailPage = () => {
                                                                         href={`/${att.file_path.replace(/\\/g, '/')}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
+                                                                        download={att.original_name}
                                                                         className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs p-2 bg-background/50 rounded border border-border-color/50"
                                                                     >
                                                                         <Paperclip className="w-3 h-3" />

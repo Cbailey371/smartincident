@@ -12,7 +12,7 @@ const SettingsPage = () => {
     const [companies, setCompanies] = useState([]); // For assignment
     const [showTypeForm, setShowTypeForm] = useState(false);
     const [editingType, setEditingType] = useState(null); // Track editing item
-    const [newType, setNewType] = useState({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
+    const [newType, setNewType] = useState({ name: '', slaResponse: 60, slaResolution: 24, isGlobal: false, companies: [] });
 
     useEffect(() => {
         if (activeTab === 'catalog' && (user?.role === 'superadmin' || user?.role === 'company_admin')) {
@@ -22,13 +22,23 @@ const SettingsPage = () => {
         if (activeTab === 'email' && user?.role === 'superadmin') {
             fetchEmailConfig();
         }
+        if (activeTab === 'notifications') {
+            fetchEmailConfig();
+        }
     }, [activeTab]);
 
     // Security State
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
-    // Email Config State
-    const [emailConfig, setEmailConfig] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_pass: '', sender_email: '' });
+    // Email Config State (camelCase to match backend)
+    const [emailConfig, setEmailConfig] = useState({
+        smtpHost: '',
+        smtpPort: 587,
+        smtpUser: '',
+        smtpPass: '',
+        senderEmail: '',
+        isActive: false
+    });
 
     const fetchEmailConfig = async () => {
         const userInfo = localStorage.getItem('userInfo');
@@ -39,7 +49,15 @@ const SettingsPage = () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                setEmailConfig(data);
+                // Handle both snake_case (old) and camelCase (new) for robustness
+                setEmailConfig({
+                    smtpHost: data.smtpHost ?? data.smtp_host ?? '',
+                    smtpPort: data.smtpPort ?? data.smtp_port ?? 587,
+                    smtpUser: data.smtpUser ?? data.smtp_user ?? '',
+                    smtpPass: data.smtpPass ?? data.smtp_pass ?? '',
+                    senderEmail: data.senderEmail ?? data.sender_email ?? '',
+                    isActive: data.isActive ?? data.is_active ?? false
+                });
             }
         } catch (error) {
             console.error(error);
@@ -81,7 +99,7 @@ const SettingsPage = () => {
     };
 
     const handleUpdateEmailConfig = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         const userInfo = localStorage.getItem('userInfo');
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
@@ -96,8 +114,8 @@ const SettingsPage = () => {
             });
 
             if (res.ok) {
-                alert('Configuración SMTP guardada');
-                fetchEmailConfig(); // Refresh to ensure clean state (e.g. masked password)
+                if (e) alert('Configuración SMTP guardada');
+                fetchEmailConfig();
             }
         } catch (error) {
             console.error(error);
@@ -112,14 +130,23 @@ const SettingsPage = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
-            setTicketTypes(data);
+            if (Array.isArray(data)) {
+                const normalizedData = data.map(t => ({
+                    ...t,
+                    slaResponse: t.slaResponse ?? t.sla_response ?? 0,
+                    slaResolution: t.slaResolution ?? t.sla_resolution ?? 0,
+                    isGlobal: t.isGlobal ?? t.is_global ?? false
+                }));
+                setTicketTypes(normalizedData);
+            } else {
+                setTicketTypes([]);
+            }
         } catch (error) {
             console.error(error);
         }
     };
 
     const fetchCompanies = async () => {
-        // Mock or real fetch for superadmin
         setCompanies([
             { id: 1, name: 'TechSolutions Inc.' },
             { id: 2, name: 'Global Logistics' },
@@ -141,13 +168,20 @@ const SettingsPage = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(newType)
+                body: JSON.stringify({
+                    name: newType.name,
+                    description: '',
+                    slaResponse: parseInt(newType.slaResponse) || 0,
+                    slaResolution: parseInt(newType.slaResolution) || 0,
+                    isGlobal: !!newType.isGlobal,
+                    companies: []
+                })
             });
 
             if (res.ok) {
                 setShowTypeForm(false);
-                setEditingType(null); // Clear editing state
-                setNewType({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
+                setEditingType(null);
+                setNewType({ name: '', slaResponse: 60, slaResolution: 24, isGlobal: false, companies: [] });
                 fetchTicketTypes();
             } else {
                 const err = await res.json();
@@ -161,11 +195,11 @@ const SettingsPage = () => {
     const handleEditClick = (type) => {
         setEditingType(type);
         setNewType({
-            name: type.name,
-            sla_response: type.sla_response,
-            sla_resolution: type.sla_resolution,
-            is_global: type.is_global,
-            companies: [] // Assuming backend doesn't return associated companies easily for now, or keep empty to not overwrite if not changing
+            name: type.name || '',
+            slaResponse: type.slaResponse !== undefined ? type.slaResponse : (type.sla_response || 0),
+            slaResolution: type.slaResolution !== undefined ? type.slaResolution : (type.sla_resolution || 0),
+            isGlobal: type.isGlobal !== undefined ? type.isGlobal : !!type.is_global,
+            companies: []
         });
         setShowTypeForm(true);
     };
@@ -173,11 +207,11 @@ const SettingsPage = () => {
     const handleCancelEdit = () => {
         setShowTypeForm(false);
         setEditingType(null);
-        setNewType({ name: '', sla_response: 60, sla_resolution: 24, is_global: false, companies: [] });
+        setNewType({ name: '', slaResponse: 60, slaResolution: 24, isGlobal: false, companies: [] });
     };
 
     const handleDeleteType = async (id) => {
-        if (!confirm('¿Estás seguro de eliminar este tipo?')) return;
+        if (!confirm('¿Estás seguro de eliminar este tipo? Esto eliminará también todas las incidencias asociadas.')) return;
         const userInfo = localStorage.getItem('userInfo');
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
@@ -186,10 +220,16 @@ const SettingsPage = () => {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.ok) fetchTicketTypes();
-            else alert('No autorizado para eliminar este tipo');
+
+            if (res.ok) {
+                fetchTicketTypes();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Error al eliminar el tipo de incidente');
+            }
         } catch (error) {
-            console.error(error);
+            console.error('Error deleting type:', error);
+            alert('Error de conexión al intentar eliminar');
         }
     };
 
@@ -197,7 +237,7 @@ const SettingsPage = () => {
         { id: 'notifications', label: 'Notificaciones', icon: Bell },
         { id: 'security', label: 'Seguridad', icon: Shield },
         { id: 'email', label: 'Servidor de Correo', icon: Mail },
-        ...(['superadmin', 'company_admin'].includes(user?.role) ? [{ id: 'catalog', label: 'Catálogo de Incidentes', icon: Tag }] : []),
+        { id: 'catalog', label: 'Catálogo de Incidentes', icon: Tag },
     ];
 
     return (
@@ -207,7 +247,6 @@ const SettingsPage = () => {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6">
-                {/* Sidebar Navigation */}
                 <div className="lg:w-64 flex-shrink-0">
                     <nav className="space-y-1">
                         {tabs.map((tab) => (
@@ -226,12 +265,9 @@ const SettingsPage = () => {
                     </nav>
                 </div>
 
-                {/* Content Area */}
                 <div className="flex-1">
                     <div className="bg-surface border border-border-color rounded-2xl p-6 min-h-[400px]">
 
-
-                        {/* NOTIFICATIONS TAB */}
                         {activeTab === 'notifications' && (
                             <div className="space-y-6">
                                 <h3 className="text-lg font-medium text-text-main">Preferencias de Notificación</h3>
@@ -240,14 +276,34 @@ const SettingsPage = () => {
                                         <p className="text-text-main font-medium">Alertas por Email</p>
                                         <p className="text-sm text-text-muted">Recibir correos cuando se asigna un ticket</p>
                                     </div>
-                                    <div className="w-11 h-6 bg-blue-600 rounded-full cursor-pointer relative">
-                                        <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                                    <div
+                                        onClick={async () => {
+                                            const updated = { ...emailConfig, isActive: !emailConfig.isActive };
+                                            setEmailConfig(updated);
+                                            const userInfo = localStorage.getItem('userInfo');
+                                            const token = userInfo ? JSON.parse(userInfo).token : null;
+                                            try {
+                                                await fetch('/api/settings/notifications', {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': `Bearer ${token}`
+                                                    },
+                                                    body: JSON.stringify(updated)
+                                                });
+                                            } catch (e) {
+                                                console.error(e);
+                                                setEmailConfig(emailConfig); // Rollback on error
+                                            }
+                                        }}
+                                        className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${emailConfig.isActive ? 'bg-blue-600' : 'bg-gray-600'}`}
+                                    >
+                                        <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${emailConfig.isActive ? 'right-1' : 'left-1'}`}></div>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* SECURITY TAB */}
                         {activeTab === 'security' && (
                             <div className="max-w-md space-y-6">
                                 <h3 className="text-lg font-medium text-text-main">Seguridad de la Cuenta</h3>
@@ -289,15 +345,9 @@ const SettingsPage = () => {
                             </div>
                         )}
 
-                        {/* EMAIL SERVER TAB */}
                         {activeTab === 'email' && (
                             <div className="max-w-2xl space-y-6">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-medium text-text-main">Configuración SMTP</h3>
-                                    {user?.role !== 'superadmin' && (
-                                        <span className="text-xs text-orange-500 px-2 py-1 bg-orange-500/10 rounded border border-orange-500/20">Solo lectura</span>
-                                    )}
-                                </div>
+                                <h3 className="text-lg font-medium text-text-main">Configuración SMTP</h3>
                                 <form onSubmit={handleUpdateEmailConfig} className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
@@ -305,11 +355,9 @@ const SettingsPage = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                disabled={user?.role !== 'superadmin'}
-                                                value={emailConfig.smtp_host}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_host: e.target.value })}
-                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main disabled:opacity-50"
-                                                placeholder="smtp.example.com"
+                                                value={emailConfig.smtpHost}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpHost: e.target.value })}
+                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
                                         <div>
@@ -317,11 +365,9 @@ const SettingsPage = () => {
                                             <input
                                                 type="number"
                                                 required
-                                                disabled={user?.role !== 'superadmin'}
-                                                value={emailConfig.smtp_port}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_port: e.target.value })}
-                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main disabled:opacity-50"
-                                                placeholder="587"
+                                                value={emailConfig.smtpPort}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpPort: parseInt(e.target.value) })}
+                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
                                     </div>
@@ -331,79 +377,39 @@ const SettingsPage = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                disabled={user?.role !== 'superadmin'}
-                                                value={emailConfig.smtp_user}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_user: e.target.value })}
-                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main disabled:opacity-50"
+                                                value={emailConfig.smtpUser}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpUser: e.target.value })}
+                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                             />
                                         </div>
                                         <div>
                                             <label className="text-sm text-text-muted block mb-1">Contraseña SMTP</label>
                                             <input
                                                 type="password"
-                                                disabled={user?.role !== 'superadmin'}
-                                                value={emailConfig.smtp_pass}
-                                                onChange={e => setEmailConfig({ ...emailConfig, smtp_pass: e.target.value })}
-                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main disabled:opacity-50"
-                                                placeholder={emailConfig.smtp_pass ? '******' : 'Nueva contraseña'}
+                                                value={emailConfig.smtpPass}
+                                                onChange={e => setEmailConfig({ ...emailConfig, smtpPass: e.target.value })}
+                                                className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
+                                                placeholder="******"
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-sm text-text-muted block mb-1">Email del Remitente</label>
+                                        <label className="text-sm text-text-muted block mb-1">Email de Remitente</label>
                                         <input
                                             type="email"
                                             required
-                                            disabled={user?.role !== 'superadmin'}
-                                            value={emailConfig.sender_email}
-                                            onChange={e => setEmailConfig({ ...emailConfig, sender_email: e.target.value })}
-                                            className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main disabled:opacity-50"
-                                            placeholder="noreply@empresa.com"
+                                            value={emailConfig.senderEmail}
+                                            onChange={e => setEmailConfig({ ...emailConfig, senderEmail: e.target.value })}
+                                            className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main"
                                         />
                                     </div>
-
-                                    {user?.role === 'superadmin' && (
-                                        <div className="flex justify-end pt-4 gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={async () => {
-                                                    const email = prompt('Ingresa el correo para enviar la prueba:');
-                                                    if (email) {
-                                                        const userInfo = localStorage.getItem('userInfo');
-                                                        const token = userInfo ? JSON.parse(userInfo).token : null;
-                                                        try {
-                                                            const res = await fetch('/api/settings/notifications/test', {
-                                                                method: 'POST',
-                                                                headers: {
-                                                                    'Content-Type': 'application/json',
-                                                                    'Authorization': `Bearer ${token}`
-                                                                },
-                                                                body: JSON.stringify({ email })
-                                                            });
-                                                            const data = await res.json();
-                                                            if (res.ok) alert(data.message);
-                                                            else alert(data.error);
-                                                        } catch (e) {
-                                                            alert('Error de conexión');
-                                                        }
-                                                    }
-                                                }}
-                                                className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors"
-                                            >
-                                                <Mail className="w-4 h-4" />
-                                                Probar Configuración
-                                            </button>
-                                            <button type="submit" className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">
-                                                <Save className="w-4 h-4" />
-                                                Guardar Configuración
-                                            </button>
-                                        </div>
-                                    )}
+                                    <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">
+                                        Guardar Configuración
+                                    </button>
                                 </form>
                             </div>
                         )}
 
-                        {/* CATALOG TAB (NEW) */}
                         {activeTab === 'catalog' && (
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
@@ -418,7 +424,7 @@ const SettingsPage = () => {
                                 </div>
 
                                 {showTypeForm && (
-                                    <form onSubmit={handleCreateOrUpdateType} className="bg-background/50 p-4 rounded-xl border border-border-color space-y-4 animate-in fade-in slide-in-from-top-4">
+                                    <form onSubmit={handleCreateOrUpdateType} className="bg-background/50 p-4 rounded-xl border border-border-color space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="text-xs text-text-muted block mb-1">Nombre del Incidente</label>
@@ -428,30 +434,27 @@ const SettingsPage = () => {
                                                     value={newType.name}
                                                     onChange={e => setNewType({ ...newType, name: e.target.value })}
                                                     className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-text-main text-sm"
-                                                    placeholder="Ej. Falla de Hardware"
                                                 />
                                             </div>
-                                            {user?.role === 'superadmin' && (
-                                                <div className="flex items-center gap-2 pt-6">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="is_global"
-                                                        checked={newType.is_global}
-                                                        onChange={e => setNewType({ ...newType, is_global: e.target.checked })}
-                                                        className="w-4 h-4 rounded bg-background border-border-color"
-                                                    />
-                                                    <label htmlFor="is_global" className="text-sm text-text-muted">Disponible para todos (Global)</label>
-                                                </div>
-                                            )}
+                                            <div className="flex items-center gap-2 pt-6">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isGlobal"
+                                                    checked={newType.isGlobal}
+                                                    onChange={e => setNewType({ ...newType, isGlobal: e.target.checked })}
+                                                    className="w-4 h-4 rounded bg-background border-border-color"
+                                                />
+                                                <label htmlFor="isGlobal" className="text-sm text-text-muted">Disponible para todos (Global)</label>
+                                            </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">SLA 1ra Respuesta (min)</label>
+                                                <label className="text-xs text-text-muted block mb-1">SLA 1ra Respuesta (horas)</label>
                                                 <input
                                                     type="number"
-                                                    value={newType.sla_response}
-                                                    onChange={e => setNewType({ ...newType, sla_response: parseInt(e.target.value) })}
+                                                    value={newType.slaResponse}
+                                                    onChange={e => setNewType({ ...newType, slaResponse: parseInt(e.target.value) })}
                                                     className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-text-main text-sm"
                                                 />
                                             </div>
@@ -459,8 +462,8 @@ const SettingsPage = () => {
                                                 <label className="text-xs text-text-muted block mb-1">SLA Resolución (horas)</label>
                                                 <input
                                                     type="number"
-                                                    value={newType.sla_resolution}
-                                                    onChange={e => setNewType({ ...newType, sla_resolution: parseInt(e.target.value) })}
+                                                    value={newType.slaResolution}
+                                                    onChange={e => setNewType({ ...newType, slaResolution: parseInt(e.target.value) })}
                                                     className="w-full bg-background border border-border-color rounded-lg px-3 py-2 text-text-main text-sm"
                                                 />
                                             </div>
@@ -476,40 +479,25 @@ const SettingsPage = () => {
 
                                 <div className="space-y-3">
                                     {ticketTypes.map(type => (
-                                        <div key={type.id} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-border-color hover:border-border-color transition-colors">
+                                        <div key={type.id} className="flex items-center justify-between p-4 bg-background/30 rounded-xl border border-border-color">
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-text-main font-medium">{type.name}</span>
-                                                    {type.is_global && (
+                                                    {type.isGlobal && (
                                                         <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">Global</span>
                                                     )}
                                                 </div>
                                                 <div className="text-xs text-text-muted mt-1 flex gap-4">
-                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.sla_response}m</span>
-                                                    <span className="flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Res: {type.sla_resolution}h</span>
+                                                    <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3" /> Resp: {type.slaResponse}h</span>
+                                                    <span className="flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Res: {type.slaResolution}h</span>
                                                 </div>
                                             </div>
-                                            {(user?.role === 'superadmin' || !type.is_global) && (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleEditClick(type)}
-                                                        className="p-2 hover:bg-background text-text-muted hover:text-text-main rounded-lg transition-colors"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteType(type.id)}
-                                                        className="p-2 hover:bg-red-500/10 text-text-muted hover:text-red-500 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            )}
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleEditClick(type)} className="p-2 hover:bg-background text-text-muted rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                                                <button onClick={() => handleDeleteType(type.id)} className="p-2 hover:bg-red-500/10 text-text-muted rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                                            </div>
                                         </div>
                                     ))}
-                                    {ticketTypes.length === 0 && (
-                                        <div className="text-center py-8 text-text-muted text-sm">No hay tipos de incidentes definidos.</div>
-                                    )}
                                 </div>
                             </div>
                         )}

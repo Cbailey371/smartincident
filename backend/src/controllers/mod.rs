@@ -5,3 +5,4 @@ pub mod upload;
 pub mod comment;
 pub mod ticket_type;
 pub mod user;
+pub mod settings;

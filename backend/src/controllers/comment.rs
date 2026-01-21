@@ -53,6 +53,7 @@ pub async fn create_comment(
                 let file_name = field.file_name().unwrap_or("upload").to_string();
                 let mime = field.content_type().unwrap_or("application/octet-stream").to_string();
                 let bytes = field.bytes().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+                tracing::info!("RECEPTOR (COMENTARIO): Archivo '{}' recibido con {} bytes", file_name, bytes.len());
                 file_data = Some((file_name, bytes.to_vec(), mime));
             }
             _ => {}
@@ -81,21 +82,30 @@ pub async fn create_comment(
         let upload_dir = "uploads";
         let _ = fs::create_dir_all(upload_dir).await;
         let ts = Utc::now().timestamp_millis();
-        let safe_name = format!("{}-{}", ts, file_name);
+        let safe_name = format!("{}-{}", ts, file_name.replace(' ', "_"));
         let save_path = stdPath::new(upload_dir).join(&safe_name);
+        let bytes_len = bytes.len();
         
-        if fs::write(&save_path, bytes).await.is_ok() {
-            let relative_path = format!("uploads/{}", safe_name);
-            let _ = attachment::ActiveModel {
-                file_path: Set(relative_path),
-                original_name: Set(file_name),
-                mime_type: Set(mime),
-                incident_id: Set(Some(incident_id)),
-                comment_id: Set(Some(result.id)),
-                created_at: Set(Utc::now().into()),
-                updated_at: Set(Utc::now().into()),
-                ..Default::default()
-            }.insert(&state.db).await;
+        match fs::write(&save_path, &bytes).await {
+            Ok(_) => {
+                let abs_path = std::fs::canonicalize(&save_path).unwrap_or_else(|_| save_path.clone());
+                tracing::info!("ARCHIVO GUARDADO (COMENTARIO): Escrito en {:?} ({} bytes)", abs_path, bytes_len);
+
+                let relative_path = format!("uploads/{}", safe_name);
+                let _ = attachment::ActiveModel {
+                    file_path: Set(relative_path),
+                    original_name: Set(file_name),
+                    mime_type: Set(mime),
+                    incident_id: Set(Some(incident_id)),
+                    comment_id: Set(Some(result.id)),
+                    created_at: Set(Utc::now().into()),
+                    updated_at: Set(Utc::now().into()),
+                    ..Default::default()
+                }.insert(&state.db).await;
+            },
+            Err(e) => {
+                tracing::error!("ERROR AL GUARDAR ARCHIVO (COMENTARIO): {}", e);
+            }
         }
     }
 

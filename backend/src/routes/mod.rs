@@ -8,6 +8,7 @@ pub mod upload;
 pub mod comment;
 pub mod ticket_type;
 pub mod user;
+pub mod settings;
 
 pub fn api_routes() -> Router<AppState> {
     Router::new()
@@ -17,4 +18,5 @@ pub fn api_routes() -> Router<AppState> {
         .nest("/upload", upload::routes())
         .nest("/ticket-types", ticket_type::routes())
         .nest("/users", user::routes())
+        .nest("/settings", settings::routes())
 }
