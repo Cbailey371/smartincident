@@ -48,6 +48,10 @@ where
             .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Database error"}))))?
             .ok_or((StatusCode::UNAUTHORIZED, Json(json!({"error": "User not found"}))))?;
 
+        if user.status != "active" {
+            return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Cuenta desactivada"}))));
+        }
+
         Ok(AuthUser { user })
     }
 }

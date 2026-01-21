@@ -11,6 +11,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub email: String,
     pub role: String,
+    pub status: String,
     pub password_hash: Option<String>,
     pub reset_token: Option<String>,
     pub reset_token_expiry: Option<DateTimeWithTimeZone>,

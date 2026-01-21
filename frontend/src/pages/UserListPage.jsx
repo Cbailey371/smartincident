@@ -20,7 +20,8 @@ const UserListPage = () => {
         email: '',
         password: '',
         role: 'client',
-        companyId: ''
+        companyId: '',
+        status: 'active'
     });
 
     useEffect(() => {
@@ -38,7 +39,8 @@ const UserListPage = () => {
                 email: editingUser.email,
                 password: '',
                 role: editingUser.role,
-                companyId: editingUser.companyId || ''
+                companyId: editingUser.companyId || '',
+                status: editingUser.status || 'active'
             });
             setShowModal(true);
         }
@@ -120,6 +122,38 @@ const UserListPage = () => {
         }
     };
 
+    const toggleUserStatus = async (u) => {
+        const newStatus = u.status === 'active' ? 'inactive' : 'active';
+        const userInfo = localStorage.getItem('userInfo');
+        const token = userInfo ? JSON.parse(userInfo).token : null;
+
+        try {
+            const res = await fetch(`/api/users/${u.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: u.name,
+                    email: u.email,
+                    role: u.role,
+                    companyId: u.companyId,
+                    status: newStatus
+                })
+            });
+
+            if (res.ok) {
+                fetchUsers();
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Error al cambiar estado');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
         const userInfo = localStorage.getItem('userInfo');
@@ -144,7 +178,7 @@ const UserListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingUser(null);
-        setFormData({ name: '', email: '', password: '', role: 'client', companyId: '' });
+        setFormData({ name: '', email: '', password: '', role: 'client', companyId: '', status: 'active' });
     };
 
     const filteredUsers = users.filter(u => {
@@ -248,6 +282,7 @@ const UserListPage = () => {
                             <tr>
                                 <th className="px-6 py-4">Usuario</th>
                                 <th className="px-6 py-4">Email</th>
+                                <th className="px-6 py-4">Estado</th>
                                 <th className="px-6 py-4">Rol</th>
                                 <th className="px-6 py-4">Empresa</th>
                                 <th className="px-6 py-4 text-right">Acciones</th>
@@ -267,6 +302,17 @@ const UserListPage = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-text-muted">{u.email}</td>
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => toggleUserStatus(u)}
+                                            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border transition-all hover:brightness-110 active:scale-95 ${u.status === 'active'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                                }`}
+                                        >
+                                            {u.status === 'active' ? 'ACTIVO' : 'INACTIVO'}
+                                        </button>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-background text-text-muted border border-border-color capitalize">
                                             {u.role === 'agent' ? 'Agente' :
@@ -382,6 +428,18 @@ const UserListPage = () => {
                                         </select>
                                     </div>
                                 )}
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-text-muted">Estado de Cuenta</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    >
+                                        <option value="active">Activo</option>
+                                        <option value="inactive">Inactivo</option>
+                                    </select>
+                                </div>
                             </div>
 
                             {formData.role === 'agent' && (
@@ -391,6 +449,14 @@ const UserListPage = () => {
                             )}
 
                             <div className="pt-4 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleDelete(editingUser.id)}
+                                    className="mr-auto p-2 text-text-muted hover:text-red-500 transition-colors"
+                                    title="Eliminar Usuario"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}

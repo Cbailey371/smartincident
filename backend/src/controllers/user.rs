@@ -42,6 +42,7 @@ pub struct CreateUserRequest {
     pub password: Option<String>,
     pub role: String,
     pub company_id: Option<i32>,
+    pub status: Option<String>,
 }
 
 pub async fn create_user(
@@ -74,6 +75,7 @@ pub async fn create_user(
         name: Set(payload.name),
         email: Set(payload.email),
         role: Set(payload.role),
+        status: Set(payload.status.unwrap_or_else(|| "active".into())),
         password_hash: Set(password_hash),
         company_id: Set(payload.company_id),
         created_at: Set(Utc::now().into()),
@@ -140,6 +142,9 @@ pub async fn update_user(
     am.email = Set(payload.email);
     am.role = Set(payload.role);
     am.company_id = Set(payload.company_id);
+    if let Some(status) = payload.status {
+        am.status = Set(status);
+    }
     
     if let Some(pwd) = payload.password {
         if !pwd.is_empty() {

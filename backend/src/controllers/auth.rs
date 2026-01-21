@@ -41,6 +41,10 @@ pub async fn login(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         .ok_or((StatusCode::UNAUTHORIZED, Json(json!({"error": "Invalid email or password"}))))?;
 
+    if user.status != "active" {
+        return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Esta cuenta ha sido desactivada"}))));
+    }
+
     let password_hash = user.password_hash.as_ref().ok_or((
         StatusCode::UNAUTHORIZED,
         Json(json!({"error": "Invalid email or password"})),

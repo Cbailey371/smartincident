@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{company, user, incident, comment, attachment};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait, ColumnTrait, QueryFilter, PaginatorTrait};
+use sea_orm::{entity::*, EntityTrait, ColumnTrait, QueryFilter, PaginatorTrait, sea_query::Expr};
 use chrono::Utc;
 
 pub async fn get_all_companies(
@@ -127,6 +127,16 @@ pub async fn update_company(
     let updated = am.update(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+
+    // Cascade inactivation: if company is inactive, deactivate all its users
+    if updated.status == "inactive" {
+        user::Entity::update_many()
+            .col_expr(user::Column::Status, Expr::value("inactive"))
+            .filter(user::Column::CompanyId.eq(id))
+            .exec(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Error deactivating users: {}", e)}))))?;
+    }
 
     Ok(Json(updated))
 }
