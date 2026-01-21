@@ -84,7 +84,10 @@ async fn init_db(db: &DatabaseConnection) {
     ];
 
     for stmt in stmts {
-        let _ = db.execute(backend.build(&stmt)).await;
+        match db.execute(backend.build(&stmt)).await {
+            Ok(_) => {},
+            Err(e) => tracing::error!("Error creating table: {}", e),
+        }
     }
 
     // Crear Admin por defecto
@@ -109,7 +112,9 @@ async fn init_db(db: &DatabaseConnection) {
             ..Default::default()
         };
         
-        let _ = models::user::Entity::insert(admin).exec(db).await;
-        tracing::info!("Admin user created: {} / {}", email, password);
+        match models::user::Entity::insert(admin).exec(db).await {
+            Ok(_) => tracing::info!("Admin user created: {} / {}", email, password),
+            Err(e) => tracing::error!("Error creating admin user: {}", e),
+        }
     }
 }
