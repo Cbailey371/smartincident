@@ -554,7 +554,7 @@ const IncidentListPage = () => {
                             </div>
 
                             <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium text-text-muted">Subir Captura de Pantalla</label>
+                                <label className="text-sm font-medium text-text-muted">Subir Archivo Adjunto</label>
                                 <div
                                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                     onDragLeave={() => setIsDragging(false)}
@@ -581,7 +581,6 @@ const IncidentListPage = () => {
                                     <input
                                         id="file-upload"
                                         type="file"
-                                        accept="image/*"
                                         className="hidden"
                                         onChange={e => setSelectedFile(e.target.files[0])}
                                     />

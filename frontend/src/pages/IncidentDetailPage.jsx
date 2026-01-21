@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Paperclip, Clock, Tag, User, Save, CheckCircle, X } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Clock, Tag, User, Save, CheckCircle, X, FileText, Download, File } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const IncidentDetailPage = () => {
@@ -270,9 +270,10 @@ const IncidentDetailPage = () => {
                         <div className="flex flex-wrap gap-4">
                             {incident.attachments.filter(att => !att.commentId).map(att => {
                                 const isImage = att.filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                const extension = att.filePath.split('.').pop().toUpperCase();
+
                                 return (
                                     <div key={att.id} className="group relative">
-                                        {/* Debug Log */ console.log('Attachment Path:', att.file_path)}
                                         {isImage ? (
                                             <div
                                                 onClick={() => setPreviewImage(`/${att.filePath.replace(/\\/g, '/')}`)}
@@ -287,17 +288,19 @@ const IncidentDetailPage = () => {
                                         ) : (
                                             <a
                                                 href={`/${att.filePath.replace(/\\/g, '/')}`}
-
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="block transition-transform hover:scale-105"
+                                                className="flex flex-col items-center justify-center w-24 h-24 bg-background border border-border-color rounded-lg hover:bg-primary/5 transition-all group"
                                             >
-                                                <div className="w-24 h-24 flex flex-col items-center justify-center bg-background border border-border-color rounded-lg group-hover:bg-primary/5 transition-colors">
-                                                    <Paperclip className="w-6 h-6 text-text-muted group-hover:text-primary mb-1" />
-                                                    <span className="text-[10px] text-text-muted px-2 text-center truncate w-full">
-                                                        {att.original_name}
+                                                <div className="relative">
+                                                    <FileText className="w-8 h-8 text-text-muted group-hover:text-primary mb-1" />
+                                                    <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] font-bold px-1 rounded">
+                                                        {extension}
                                                     </span>
                                                 </div>
+                                                <span className="text-[10px] text-text-muted px-2 text-center truncate w-full font-medium group-hover:text-primary">
+                                                    {att.originalName}
+                                                </span>
                                             </a>
                                         )}
                                     </div>
@@ -425,6 +428,8 @@ const IncidentDetailPage = () => {
                                                 <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                                                     {comment.attachments.map(att => {
                                                         const isImage = att.filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                                                        const extension = att.filePath.split('.').pop().toUpperCase();
+
                                                         return (
                                                             <div key={att.id}>
                                                                 {isImage ? (
@@ -443,10 +448,19 @@ const IncidentDetailPage = () => {
                                                                         href={`/${att.filePath.replace(/\\/g, '/')}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs p-2 bg-background/50 rounded border border-border-color/50"
+                                                                        className="flex items-center gap-2 p-2 bg-background/50 rounded-lg border border-border-color/50 hover:border-primary/50 hover:bg-primary/5 transition-all group"
                                                                     >
-                                                                        <Paperclip className="w-3 h-3" />
-                                                                        <span className="truncate">{att.original_name || 'Adjunto'}</span>
+                                                                        <div className="bg-primary/10 p-1.5 rounded text-primary">
+                                                                            <File className="w-4 h-4" />
+                                                                        </div>
+                                                                        <div className="flex flex-col min-w-0">
+                                                                            <span className="text-[11px] font-medium text-text-main truncate group-hover:text-primary transition-colors">
+                                                                                {att.originalName}
+                                                                            </span>
+                                                                            <span className="text-[9px] text-text-muted font-bold uppercase">
+                                                                                {extension}
+                                                                            </span>
+                                                                        </div>
                                                                     </a>
                                                                 )}
                                                             </div>
