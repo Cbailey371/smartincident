@@ -39,6 +39,8 @@ const SettingsPage = () => {
         senderEmail: '',
         isActive: false
     });
+    const [testEmail, setTestEmail] = useState('');
+    const [testingEmail, setTestingEmail] = useState(false);
 
     const fetchEmailConfig = async () => {
         const userInfo = localStorage.getItem('userInfo');
@@ -143,6 +145,36 @@ const SettingsPage = () => {
             }
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleTestEmail = async () => {
+        if (!testEmail) return alert('Ingresa un correo para la prueba');
+        setTestingEmail(true);
+        const userInfo = localStorage.getItem('userInfo');
+        const token = userInfo ? JSON.parse(userInfo).token : null;
+
+        try {
+            const res = await fetch('/api/settings/notifications/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ email: testEmail })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Correo de prueba enviado. Revisa tu bandeja de entrada.');
+            } else {
+                alert(data.error || 'Fallo al enviar correo de prueba');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error de conexión');
+        } finally {
+            setTestingEmail(false);
         }
     };
 
@@ -407,6 +439,27 @@ const SettingsPage = () => {
                                         Guardar Configuración
                                     </button>
                                 </form>
+
+                                <div className="pt-6 border-t border-border-color">
+                                    <h4 className="text-sm font-medium text-text-main mb-3">Probar Configuración</h4>
+                                    <p className="text-xs text-text-muted mb-4">Envía un correo de prueba para verificar que los datos SMTP son correctos.</p>
+                                    <div className="flex gap-3 max-w-md">
+                                        <input
+                                            type="email"
+                                            placeholder="correo@ejemplo.com"
+                                            value={testEmail}
+                                            onChange={e => setTestEmail(e.target.value)}
+                                            className="flex-1 bg-background border border-border-color rounded-lg px-4 py-2 text-text-main text-sm focus:outline-none focus:border-blue-500"
+                                        />
+                                        <button
+                                            onClick={handleTestEmail}
+                                            disabled={testingEmail}
+                                            className="px-4 py-2 bg-background border border-border-color text-text-main hover:bg-background/80 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                        >
+                                            {testingEmail ? 'Enviando...' : 'Enviar Prueba'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
