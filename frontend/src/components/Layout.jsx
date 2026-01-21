@@ -11,9 +11,9 @@ const Layout = () => {
             case '/companies': return 'Gestión de Empresas';
             case '/users': return 'Gestión de Usuarios';
             case '/incidents': return 'Lista de Incidentes';
-            case '/history': return 'Historial de Tickets';
+            case '/history': return 'Historial';
             case '/settings': return 'Configuración';
-            default: return 'Tickes SaaS'; // Fallback title
+            default: return 'Incidentes'; // Fallback title
         }
     };
 

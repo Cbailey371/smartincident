@@ -90,6 +90,7 @@ pub async fn get_dashboard_metrics(
                 "ticketCode": i.ticket_code,
                 "title": i.title,
                 "status": i.status,
+                "priority": i.priority,
                 "createdAt": i.created_at.to_rfc3339(),
                 "company": {
                     "name": company_name

@@ -88,7 +88,17 @@ sudo systemctl enable smartincident
 sudo systemctl start smartincident
 ```
 
-## 8. Despliegue del Frontend
+## 8. Comandos de Mantenimiento (Reinicio)
+Cada vez que realices cambios en el backend, debes reiniciarlo con Systemd:
+
+```bash
+sudo systemctl restart smartincident
+```
+
+**Para ver logs:**
+`sudo journalctl -u smartincident -f`
+
+## 9. Despliegue del Frontend
 ```bash
 cd /var/www/smartincident/frontend
 
@@ -99,7 +109,7 @@ npm install
 npm run build
 ```
 
-## 9. Configuración de Nginx
+## 10. Configuración de Nginx
 ```bash
 sudo apt install -y nginx
 sudo nano /etc/nginx/sites-available/smartincident
@@ -141,7 +151,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-## 10. Seguridad y SSL (HTTPS) con Certbot
+## 11. Seguridad y SSL (HTTPS) con Certbot
 Para habilitar HTTPS de forma gratuita con Let's Encrypt:
 
 1. Instalar Certbot:
@@ -162,7 +172,7 @@ sudo certbot --nginx -d smartincident.tusociosmart.com
 sudo certbot renew --dry-run
 ```
 
-## 11. Permisos Finales
+## 12. Permisos Finales
 ```bash
 # Asegurar que Nginx (www-data) pueda leer los archivos
 sudo chown -R ubuntu:ubuntu /var/www/smartincident
