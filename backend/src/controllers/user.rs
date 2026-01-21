@@ -172,6 +172,10 @@ pub async fn delete_user(
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Only superadmin can delete users"}))));
     }
 
+    if user_auth.user.id == id {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "You cannot delete yourself"}))));
+    }
+
     let user_model = user::Entity::find_by_id(id)
         .one(&state.db)
         .await
