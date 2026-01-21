@@ -109,7 +109,6 @@ pub async fn delete_ticket_type(
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Ticket type not found"}))))?;
 
     // 1. Delete all incidents of this type
-    // To ensures deletion succeeds, we first delete attachments and comments linked to these incidents
     let type_incidents = incident::Entity::find()
         .filter(incident::Column::TypeId.eq(id))
         .all(&state.db)
@@ -119,21 +118,39 @@ pub async fn delete_ticket_type(
     let incident_ids: Vec<i32> = type_incidents.iter().map(|i| i.id).collect();
 
     if !incident_ids.is_empty() {
-        // Delete attachments of these incidents
+        // Find all comments for these incidents
+        let comments = comment::Entity::find()
+            .filter(comment::Column::IncidentId.is_in(incident_ids.clone()))
+            .all(&state.db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
+        
+        let comment_ids: Vec<i32> = comments.iter().map(|c| c.id).collect();
+
+        // 1. Delete attachments linked to these comments
+        if !comment_ids.is_empty() {
+            attachment::Entity::delete_many()
+                .filter(attachment::Column::CommentId.is_in(comment_ids))
+                .exec(&state.db)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related comment attachments: {}", e)}))))?;
+        }
+
+        // 2. Delete attachments linked to these incidents
         attachment::Entity::delete_many()
             .filter(attachment::Column::IncidentId.is_in(incident_ids.clone()))
             .exec(&state.db)
             .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related attachments: {}", e)}))))?;
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incident attachments: {}", e)}))))?;
 
-        // Delete comments of these incidents
+        // 3. Delete comments of these incidents
         comment::Entity::delete_many()
             .filter(comment::Column::IncidentId.is_in(incident_ids.clone()))
             .exec(&state.db)
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related comments: {}", e)}))))?;
 
-        // Delete the incidents themselves
+        // 4. Delete the incidents themselves
         incident::Entity::delete_many()
             .filter(incident::Column::TypeId.eq(id))
             .exec(&state.db)
