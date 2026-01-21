@@ -108,6 +108,14 @@ pub async fn delete_ticket_type(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Ticket type not found"}))))?;
 
+    // 1. Delete all incidents of this type
+    incident::Entity::delete_many()
+        .filter(incident::Column::TypeId.eq(id))
+        .exec(&state.db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Could not delete related incidents: {}", e)}))))?;
+
+    // 2. Delete the ticket type
     tt.delete(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
