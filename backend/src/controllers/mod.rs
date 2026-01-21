@@ -6,3 +6,4 @@ pub mod comment;
 pub mod ticket_type;
 pub mod user;
 pub mod dashboard;
+pub mod settings;
