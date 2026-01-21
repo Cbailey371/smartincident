@@ -259,7 +259,7 @@ pub async fn update_incident(
     if let Some(p) = payload.priority { am.priority = Set(p); }
     if let Some(a) = payload.assignee_id { am.assignee_id = Set(Some(a)); }
     
-    am.updated_at = Set(Utc::now().naive_utc());
+    am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)
         .await

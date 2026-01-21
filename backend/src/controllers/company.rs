@@ -49,8 +49,8 @@ pub async fn create_company(
         address: Set(payload.address),
         contact_email: Set(payload.contact_email),
         status: Set(payload.status),
-        created_at: Set(Utc::now().naive_utc()),
-        updated_at: Set(Utc::now().naive_utc()),
+        created_at: Set(Utc::now().into()),
+        updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
 
@@ -101,7 +101,7 @@ pub async fn update_company(
     am.address = Set(payload.address);
     am.contact_email = Set(payload.contact_email);
     am.status = Set(payload.status);
-    am.updated_at = Set(Utc::now().naive_utc());
+    am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)
         .await
