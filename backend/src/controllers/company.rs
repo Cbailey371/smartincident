@@ -8,13 +8,17 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{company, user, incident};
 use crate::middleware::auth::AuthUser;
+<<<<<<< HEAD
 use sea_orm::{entity::*, EntityTrait, ColumnTrait};
+=======
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait};
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
 use chrono::Utc;
 
 pub async fn get_all_companies(
     State(state): State<AppState>,
     user: AuthUser,
-) -> Result<Json<Vec<company::Model>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     if user.user.role != "superadmin" {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Only superadmin can list companies"}))));
     }
@@ -24,7 +28,28 @@ pub async fn get_all_companies(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(companies))
+    let mut result: Vec<Value> = Vec::new();
+
+    for c in companies {
+        let user_count: u64 = user::Entity::find()
+            .filter(user::Column::CompanyId.eq(c.id))
+            .count(&state.db)
+            .await
+            .unwrap_or(0);
+
+        let incident_count: u64 = incident::Entity::find()
+            .filter(incident::Column::CompanyId.eq(c.id))
+            .count(&state.db)
+            .await
+            .unwrap_or(0);
+
+        let mut company_val = json!(c);
+        company_val["usersCount"] = json!(user_count);
+        company_val["ticketsCount"] = json!(incident_count);
+        result.push(company_val);
+    }
+
+    Ok(Json(json!(result)))
 }
 
 #[derive(Deserialize)]
@@ -32,6 +57,7 @@ pub struct CreateCompanyRequest {
     pub name: String,
     pub address: Option<String>,
     pub contact_email: Option<String>,
+    pub status: String,
 }
 
 pub async fn create_company(
@@ -47,8 +73,9 @@ pub async fn create_company(
         name: Set(payload.name),
         address: Set(payload.address),
         contact_email: Set(payload.contact_email),
-        created_at: Set(Utc::now().naive_utc()),
-        updated_at: Set(Utc::now().naive_utc()),
+        status: Set(payload.status),
+        created_at: Set(Utc::now().into()),
+        updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
 
@@ -98,7 +125,8 @@ pub async fn update_company(
     am.name = Set(payload.name);
     am.address = Set(payload.address);
     am.contact_email = Set(payload.contact_email);
-    am.updated_at = Set(Utc::now().naive_utc());
+    am.status = Set(payload.status);
+    am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)
         .await

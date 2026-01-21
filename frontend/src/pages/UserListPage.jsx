@@ -20,12 +20,12 @@ const UserListPage = () => {
         email: '',
         password: '',
         role: 'client',
-        company_id: ''
+        companyId: ''
     });
 
     useEffect(() => {
         fetchUsers();
-        if (user?.role === 'superadmin' || user?.role === 'company_admin') {
+        if (user?.role === 'superadmin') {
             fetchCompanies();
         }
     }, [user]);
@@ -38,7 +38,7 @@ const UserListPage = () => {
                 email: editingUser.email,
                 password: '',
                 role: editingUser.role,
-                company_id: editingUser.company_id || ''
+                companyId: editingUser.companyId || ''
             });
             setShowModal(true);
         }
@@ -80,8 +80,8 @@ const UserListPage = () => {
         const token = userInfo ? JSON.parse(userInfo).token : null;
 
         // Frontend Validation
-        if (['client', 'company_admin'].includes(formData.role) && !formData.company_id && user?.role === 'superadmin') {
-            alert('Para Clientes y Administradores de Empresa, debes seleccionar una empresa.');
+        if (formData.role === 'client' && !formData.companyId && user?.role === 'superadmin') {
+            alert('Para Clientes, debes seleccionar una empresa.');
             return;
         }
 
@@ -93,15 +93,11 @@ const UserListPage = () => {
             const method = editingUser ? 'PUT' : 'POST';
 
             // Clean up empty password if editing
-            const payload = { ...formData };
+            const payload = {
+                ...formData,
+                companyId: formData.companyId ? parseInt(formData.companyId) : null
+            };
             if (editingUser && !payload.password) delete payload.password;
-
-            // Auto-assign company for Company Admins
-            if (user?.role === 'company_admin') {
-                payload.company_id = user.company_id;
-            } else if (!payload.company_id) {
-                payload.company_id = null;
-            }
 
             const res = await fetch(url, {
                 method,
@@ -143,7 +139,7 @@ const UserListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingUser(null);
-        setFormData({ name: '', email: '', password: '', role: 'client', company_id: '' });
+        setFormData({ name: '', email: '', password: '', role: 'client', companyId: '' });
     };
 
     const filteredUsers = users.filter(u => {
@@ -151,7 +147,7 @@ const UserListPage = () => {
             u.email.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesRole = filterRole === 'all' ? true : u.role === filterRole;
-        const matchesCompany = filterCompany === 'all' ? true : (u.company_id || u.company?.id) === parseInt(filterCompany);
+        const matchesCompany = filterCompany === 'all' ? true : (u.companyId || u.company?.id) === parseInt(filterCompany);
 
         return matchesSearch && matchesRole && matchesCompany;
     });
@@ -220,7 +216,6 @@ const UserListPage = () => {
                                 <option value="all">Todos los roles</option>
                                 <option value="superadmin">Super Admin</option>
                                 <option value="agent">Agente</option>
-                                <option value="company_admin">Admin Empresa</option>
                                 <option value="client">Cliente</option>
                             </select>
                         </div>
@@ -269,7 +264,8 @@ const UserListPage = () => {
                                     <td className="px-6 py-4 text-text-muted">{u.email}</td>
                                     <td className="px-6 py-4">
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-background text-text-muted border border-border-color capitalize">
-                                            {u.role.replace('_', ' ')}
+                                            {u.role === 'agent' ? 'Agente' :
+                                                u.role === 'superadmin' ? 'Administrador' : 'Cliente'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-text-muted">{u.company?.name || 'N/A'}</td>
@@ -357,28 +353,24 @@ const UserListPage = () => {
                                         className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     >
                                         <option value="client">Cliente</option>
-                                        <option value="company_admin">Admin Empresa</option>
                                         <option value="agent">Agente Soporte</option>
                                         {user?.role === 'superadmin' && <option value="superadmin">Super Admin</option>}
                                     </select>
                                 </div>
 
-                                {/* Company Selection: Only for Superadmin or if not restricted */}
-                                {(user?.role === 'superadmin' || user?.role === 'company_admin') && (
+                                {/* Company Selection: Only for Superadmin */}
+                                {user?.role === 'superadmin' && (
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium text-text-muted">
                                             Empresa
-                                            {(formData.role === 'client' || formData.role === 'company_admin') && <span className="text-red-500 ml-1">*</span>}
+                                            {formData.role === 'client' && <span className="text-red-500 ml-1">*</span>}
                                         </label>
                                         <select
-                                            value={formData.company_id}
-                                            onChange={e => setFormData({ ...formData, company_id: e.target.value })}
-                                            disabled={user?.role === 'company_admin'} // Lock if Company Admin
+                                            value={formData.companyId}
+                                            onChange={e => setFormData({ ...formData, companyId: e.target.value })}
                                             className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50"
                                         >
-                                            <option value="">
-                                                {user?.role === 'company_admin' ? 'Tu Empresa' : 'Ninguna / Global'}
-                                            </option>
+                                            <option value="">Ninguna / Global</option>
                                             {companies.map(c => (
                                                 <option key={c.id} value={c.id}>{c.name}</option>
                                             ))}

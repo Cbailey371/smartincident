@@ -6,17 +6,18 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::models::{incident, user, attachment};
+use crate::models::{incident, user, attachment, company};
 use crate::middleware::auth::AuthUser;
 use crate::utils::email::EmailService;
-use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter};
+use sea_orm::{entity::*, query::*, EntityTrait, QueryFilter, ColumnTrait};
 use chrono::Utc;
 use std::path::Path as stdPath;
 use tokio::fs;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct IncidentQuery {
-    pub company_id: Option<String>,
+    pub company_id: Option<String>, // Keep internal name snake_case if preferred, but serde will map from companyId
     pub status: Option<String>,
     pub priority: Option<String>,
     pub assignee_id: Option<i32>,
@@ -27,12 +28,12 @@ pub async fn get_all_incidents(
     State(state): State<AppState>,
     user: AuthUser,
     Query(params): Query<IncidentQuery>,
-) -> Result<Json<Vec<incident::Model>>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut query = incident::Entity::find();
 
     // Role-based filtering
     match user.user.role.as_str() {
-        "superadmin" => {
+        "superadmin" | "agent" => {
             if let Some(cid) = params.company_id {
                 if cid != "all" {
                     if let Ok(id) = cid.parse::<i32>() {
@@ -41,24 +42,23 @@ pub async fn get_all_incidents(
                 }
             }
         }
-        "company_admin" => {
+        "client" => {
             if let Some(cid) = user.user.company_id {
                 query = query.filter(incident::Column::CompanyId.eq(cid));
+            } else {
+                query = query.filter(incident::Column::ReporterId.eq(user.user.id));
             }
-        }
-        "client" => {
-            query = query.filter(incident::Column::ReporterId.eq(user.user.id));
-        }
-        "agent" => {
-            query = query.filter(incident::Column::AssigneeId.eq(user.user.id));
         }
         _ => return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized role"})))),
     }
 
     // Additional filters
-    if let Some(status) = params.status {
-        if status != "all" {
-            query = query.filter(incident::Column::Status.eq(status));
+    if let Some(status_str) = params.status {
+        if status_str != "all" {
+            let statuses: Vec<String> = status_str.split(',').map(|s| s.to_string()).collect();
+            if !statuses.is_empty() {
+                query = query.filter(incident::Column::Status.is_in(statuses));
+            }
         }
     }
 
@@ -76,13 +76,29 @@ pub async fn get_all_incidents(
         query = query.filter(incident::Column::TicketCode.contains(&code));
     }
 
-    let incidents = query
+    let incidents_with_related = query
+        .find_with_related(company::Entity)
         .order_by_desc(incident::Column::CreatedAt)
         .all(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    Ok(Json(incidents))
+    let mut result: Vec<Value> = Vec::new();
+
+    for (inc, companies) in incidents_with_related {
+        let mut inc_val = json!(inc);
+        inc_val["company"] = json!(companies.first());
+        
+        // Also fetch assignee if exists
+        if let Some(aid) = inc.assignee_id {
+            let assignee = user::Entity::find_by_id(aid).one(&state.db).await.unwrap_or(None);
+            inc_val["assignee"] = json!(assignee);
+        }
+
+        result.push(inc_val);
+    }
+
+    Ok(Json(json!(result)))
 }
 
 
@@ -104,8 +120,8 @@ pub async fn create_incident(
             "title" => title = field.text().await.unwrap_or_default(),
             "description" => description = field.text().await.unwrap_or_default(),
             "priority" => priority = field.text().await.unwrap_or_default(),
-            "type_id" => type_id = field.text().await.ok().and_then(|t| t.parse().ok()),
-            "company_id" => company_id_input = field.text().await.ok().and_then(|c| c.parse().ok()),
+            "typeId" => type_id = field.text().await.ok().and_then(|t| t.parse().ok()),
+            "companyId" => company_id_input = field.text().await.ok().and_then(|c| c.parse().ok()),
             "image" | "file" => {
                 let file_name = field.file_name().unwrap_or("upload").to_string();
                 let mime = field.content_type().unwrap_or("application/octet-stream").to_string();
@@ -130,6 +146,10 @@ pub async fn create_incident(
     let code_prefix = if company_id != 0 { format!("INC-{}", company_id) } else { "INC-GLB".into() };
     let ticket_code = format!("{}-{}", code_prefix, timestamp);
 
+    if type_id.is_none() {
+        return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Debe seleccionar un Tipo de Incidente"}))));
+    }
+
     let new_incident = incident::ActiveModel {
         ticket_code: Set(Some(ticket_code)),
         title: Set(title),
@@ -138,9 +158,9 @@ pub async fn create_incident(
         status: Set("open".into()),
         reporter_id: Set(user.user.id),
         company_id: Set(company_id),
-        type_id: Set(type_id.unwrap_or(0)),
-        created_at: Set(Utc::now().naive_utc()),
-        updated_at: Set(Utc::now().naive_utc()),
+        type_id: Set(type_id.unwrap()), // Safe now
+        created_at: Set(Utc::now().into()),
+        updated_at: Set(Utc::now().into()),
         ..Default::default()
     };
 
@@ -216,9 +236,9 @@ pub async fn create_incident(
 
 pub async fn get_incident_by_id(
     State(state): State<AppState>,
-    user: AuthUser,
+    user_auth: AuthUser,
     Path(id): Path<i32>,
-) -> Result<Json<incident::Model>, (StatusCode, Json<Value>)> {
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let incident = incident::Entity::find_by_id(id)
         .one(&state.db)
         .await
@@ -226,23 +246,60 @@ pub async fn get_incident_by_id(
         .ok_or((StatusCode::NOT_FOUND, Json(json!({"error": "Incident not found"}))))?;
 
     // Authorization check
-    if user.user.role == "client" && incident.reporter_id != user.user.id {
-        return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
-    }
-    if user.user.role == "company_admin" && incident.company_id != user.user.company_id.unwrap_or(0) {
-        return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
+    if user_auth.user.role == "client" {
+        let user_id = user_auth.user.id;
+        let user_cid = user_auth.user.company_id.unwrap_or(0);
+        let is_reporter = incident.reporter_id == user_id;
+        let matches_company = user_cid != 0 && incident.company_id == user_cid;
+
+        tracing::info!(
+            "Detail Access Check - User: {}, Role: {}, UserCID: {}, Inc: {}, IncCID: {}, IsRep: {}, MatchComp: {}",
+            user_id, user_auth.user.role, user_cid, incident.id, incident.company_id, is_reporter, matches_company
+        );
+
+        if !is_reporter && !matches_company {
+            tracing::warn!("Client {} denied access to incident {}", user_id, incident.id);
+            return Err((StatusCode::FORBIDDEN, Json(json!({"error": "No tiene permisos para ver este incidente"}))));
+        }
     }
 
-    Ok(Json(incident))
+    let mut inc_val = json!(incident);
+
+    // Fetch Reporter
+    let reporter = user::Entity::find_by_id(incident.reporter_id).one(&state.db).await.unwrap_or(None);
+    inc_val["reporter"] = json!(reporter);
+
+    // Fetch Assignee
+    if let Some(aid) = incident.assignee_id {
+        let assignee = user::Entity::find_by_id(aid).one(&state.db).await.unwrap_or(None);
+        inc_val["assignee"] = json!(assignee);
+    }
+
+    // Fetch Company
+    if incident.company_id != 0 {
+        let comp = company::Entity::find_by_id(incident.company_id).one(&state.db).await.unwrap_or(None);
+        inc_val["company"] = json!(comp);
+    }
+
+    // Fetch Attachments
+    let attachments = attachment::Entity::find()
+        .filter(attachment::Column::IncidentId.eq(incident.id))
+        .all(&state.db)
+        .await
+        .unwrap_or_default();
+    inc_val["attachments"] = json!(attachments);
+
+    Ok(Json(inc_val))
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateIncidentRequest {
     pub title: Option<String>,
     pub description: Option<String>,
     pub status: Option<String>,
     pub priority: Option<String>,
-    pub assignee_id: Option<i32>,
+    pub assignee_id: Option<i32>, // serde maps from assigneeId
 }
 
 pub async fn update_incident(
@@ -265,7 +322,7 @@ pub async fn update_incident(
     if let Some(p) = payload.priority { am.priority = Set(p); }
     if let Some(a) = payload.assignee_id { am.assignee_id = Set(Some(a)); }
     
-    am.updated_at = Set(Utc::now().naive_utc());
+    am.updated_at = Set(Utc::now().into());
 
     let updated = am.update(&state.db)
         .await

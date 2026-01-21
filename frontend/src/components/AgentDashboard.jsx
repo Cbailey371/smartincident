@@ -92,19 +92,27 @@ const AgentDashboard = () => {
                                         variants={itemVariants}
                                         className="hover:bg-background/30 transition-colors"
                                     >
-                                        <td className="px-6 py-4 font-mono">#{ticket.ticket_code || ticket.id}</td>
+                                        <td className="px-6 py-4 font-mono">#{ticket.ticketCode || ticket.id}</td>
                                         <td className="px-6 py-4 font-medium text-text-main">{ticket.title}</td>
                                         <td className="px-6 py-4">
                                             <span className={`text-xs font-bold uppercase ${ticket.priority === 'high' ? 'text-orange-500' :
                                                 ticket.priority === 'critical' ? 'text-red-500' : 'text-text-muted'
-                                                }`}>{ticket.priority}</span>
+                                                }`}>
+                                                {ticket.priority === 'low' ? 'BAJA' :
+                                                    ticket.priority === 'medium' ? 'MEDIA' :
+                                                        ticket.priority === 'high' ? 'ALTA' :
+                                                            ticket.priority === 'critical' ? 'CRÍTICA' : ticket.priority}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">{ticket.company?.name || 'N/A'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                                                 'bg-surface border-border-color text-text-muted'
                                                 }`}>
-                                                {ticket.status}
+                                                {ticket.status === 'open' ? 'Abierto' :
+                                                    ticket.status === 'in_progress' ? 'En Progreso' :
+                                                        ticket.status === 'resolved' ? 'Resuelto' :
+                                                            ticket.status === 'closed' ? 'Cerrado' : ticket.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">

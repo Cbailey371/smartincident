@@ -1,7 +1,8 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[sea_orm(table_name = "comments")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -26,7 +27,7 @@ pub enum Relation {
         from = "Column::AuthorId",
         to = "super::user::Column::Id"
     )]
-    Author,
+    User,
     #[sea_orm(has_many = "super::attachment::Entity")]
     Attachment,
 }
@@ -39,7 +40,7 @@ impl Related<super::incident::Entity> for Entity {
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Author.def()
+        Relation::User.def()
     }
 }
 

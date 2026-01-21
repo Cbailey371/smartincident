@@ -83,7 +83,7 @@ pub async fn forgot_password(
     let mut am: user::ActiveModel = user.into();
     let user_email = am.email.clone().unwrap(); // Get before move
     am.reset_token = Set(Some(token.clone()));
-    am.reset_token_expiry = Set(Some(expiry.naive_utc()));
+    am.reset_token_expiry = Set(Some(expiry.into()));
     am.update(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
     // Send email (Fire and forget)
@@ -119,7 +119,7 @@ pub async fn reset_password(
         .ok_or((StatusCode::BAD_REQUEST, Json(json!({"error": "Invalid or expired token"}))))?;
 
     if let Some(expiry) = user.reset_token_expiry {
-        if expiry < Utc::now().naive_utc() {
+        if expiry.timestamp() < Utc::now().timestamp() {
             return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "Token expired"}))));
         }
     }

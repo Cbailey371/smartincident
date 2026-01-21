@@ -28,7 +28,7 @@ const SettingsPage = () => {
     }, [activeTab]);
 
     // Security State
-    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [passwordData, setPasswordData] = useState({ currentPassword: '', name: '', newPassword: '', confirmPassword: '' });
 
     // Email Config State (camelCase to match backend)
     const [emailConfig, setEmailConfig] = useState({

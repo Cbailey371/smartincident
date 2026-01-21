@@ -16,7 +16,7 @@ const CompanyListPage = () => {
     const [formData, setFormData] = useState({
         name: '',
         address: '',
-        contact_email: '',
+        contactEmail: '',
         status: 'active'
     });
 
@@ -29,7 +29,7 @@ const CompanyListPage = () => {
             setFormData({
                 name: editingCompany.name,
                 address: editingCompany.address || '',
-                contact_email: editingCompany.contact_email || '',
+                contactEmail: editingCompany.contactEmail || '',
                 status: editingCompany.status
             });
             setShowModal(true);
@@ -76,7 +76,7 @@ const CompanyListPage = () => {
             if (res.ok) {
                 setShowModal(false);
                 setEditingCompany(null);
-                setFormData({ name: '', address: '', contact_email: '', status: 'active' });
+                setFormData({ name: '', address: '', contactEmail: '', status: 'active' });
                 fetchCompanies();
             }
         } catch (error) {
@@ -107,7 +107,35 @@ const CompanyListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingCompany(null);
-        setFormData({ name: '', address: '', contact_email: '', status: 'active' });
+        setFormData({ name: '', address: '', contactEmail: '', status: 'active' });
+    };
+
+    const toggleStatus = async (company) => {
+        const newStatus = company.status === 'active' ? 'inactive' : 'active';
+        const userInfo = localStorage.getItem('userInfo');
+        const token = userInfo ? JSON.parse(userInfo).token : null;
+
+        try {
+            const res = await fetch(`/api/companies/${company.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: company.name,
+                    address: company.address,
+                    contactEmail: company.contactEmail,
+                    status: newStatus
+                })
+            });
+
+            if (res.ok) {
+                fetchCompanies();
+            }
+        } catch (error) {
+            console.error("Error toggling status", error);
+        }
     };
 
     const filteredCompanies = companies.filter(c => {
@@ -207,17 +235,22 @@ const CompanyListPage = () => {
                                             </div>
                                             <div>
                                                 <div className="font-medium text-text-main">{company.name}</div>
-                                                <div className="text-xs text-text-muted">{company.contact_email || 'Sin email'}</div>
+                                                <div className="text-xs text-text-muted">{company.contactEmail || 'Sin email'}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${company.status === 'active'
-                                            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                            : 'bg-background text-text-muted border border-border-color'
-                                            }`}>
-                                            {company.status === 'active' ? 'Activo' : 'Inactivo'}
-                                        </span>
+                                        <button
+                                            onClick={() => toggleStatus(company)}
+                                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border cursor-pointer transition-all hover:brightness-110 active:scale-95 ${company.status === 'active'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.1)]'
+                                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 shadow-[0_0_12px_rgba(244,63,94,0.1)]'
+                                                }`}
+                                            title={company.status === 'active' ? "Desactivar Empresa" : "Activar Empresa"}
+                                        >
+                                            <span className={`w-2 h-2 rounded-full mr-2 ${company.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+                                            {company.status === 'active' ? 'Activa' : 'Inactiva'}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4 text-text-muted">{company.usersCount}</td>
                                     <td className="px-6 py-4 text-text-muted">{company.ticketsCount}</td>
@@ -279,8 +312,8 @@ const CompanyListPage = () => {
                                 <label className="text-sm font-medium text-text-muted">Email de Contacto</label>
                                 <input
                                     type="email"
-                                    value={formData.contact_email}
-                                    onChange={e => setFormData({ ...formData, contact_email: e.target.value })}
+                                    value={formData.contactEmail}
+                                    onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
                                     className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                     placeholder="contacto@empresa.com"
                                 />

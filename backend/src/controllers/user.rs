@@ -86,6 +86,10 @@ pub async fn create_user(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
+<<<<<<< HEAD
+=======
+    // Return the user with company info if possible (optional but good for UI consistency)
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
     let mut user_val = json!(user_model);
     if let Some(cid) = user_model.company_id {
         let company = company::Entity::find_by_id(cid).one(&state.db).await.unwrap_or(None);
@@ -190,10 +194,13 @@ pub async fn delete_user(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
     // 2. Handle incidents reported by this user
+<<<<<<< HEAD
     // We can either delete them or reassign them to a system user. 
     // Given the user's request, they likely want the user and their data gone or the blockage removed.
     // For now, we will delete the incidents reported by the user to satisfy the constraint.
     // Note: This will fail if there are comments/attachments without cascade delete.
+=======
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
     incident::Entity::delete_many()
         .filter(incident::Column::ReporterId.eq(id))
         .exec(&state.db)

@@ -23,10 +23,10 @@ const HistoryPage = () => {
 
     useEffect(() => {
         // Fetch specific data for filters based on roles
-        if (['superadmin', 'company_admin', 'agent'].includes(user?.role)) {
+        if (['superadmin', 'agent'].includes(user?.role)) {
             fetchUsers();
         }
-        if (['superadmin', 'company_admin'].includes(user?.role)) {
+        if (['superadmin'].includes(user?.role)) {
             fetchCompanies();
         }
     }, [user]);
@@ -34,7 +34,7 @@ const HistoryPage = () => {
     // Fetch Incidents whenever filters change (Server-side filtering)
     useEffect(() => {
         fetchHistory();
-    }, [filterPriority, filterAssignee, filterCompany]);
+    }, [user, filterPriority, filterAssignee, filterCompany]);
     // Note: startDate, endDate, searchTerm might need debounce or specific "Apply" button to avoid too many requests, 
     // or just fetch on effect for now if traffic is low.
 
@@ -81,9 +81,9 @@ const HistoryPage = () => {
             params.append('status', 'closed,resolved'); // FORCE Closed/Resolved
 
             if (filterPriority !== 'all') params.append('priority', filterPriority);
-            if (filterAssignee !== 'all') params.append('assignee_id', filterAssignee);
-            if (filterCompany !== 'all') params.append('company_id', filterCompany);
-            if (searchTerm) params.append('ticket_code', searchTerm); // Assuming simple search by code/title? Backend implemented ticket_code like
+            if (filterAssignee !== 'all') params.append('assigneeId', filterAssignee);
+            if (filterCompany !== 'all') params.append('companyId', filterCompany);
+            if (searchTerm) params.append('ticketCode', searchTerm);
 
             const res = await fetch(`/api/incidents?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -103,7 +103,7 @@ const HistoryPage = () => {
     // So we will filter `incidents` (which are already closed/resolved) by Date and Title here.
     const filteredIncidents = incidents.filter(incident => {
         const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            incident.ticket_code?.toLowerCase().includes(searchTerm.toLowerCase());
+            incident.ticketCode?.toLowerCase().includes(searchTerm.toLowerCase());
 
         // Date Logic
         let matchesDate = true;
@@ -217,7 +217,7 @@ const HistoryPage = () => {
                             </select>
                         </div>
 
-                        {(user?.role === 'superadmin' || user?.role === 'company_admin' || user?.role === 'agent') && (
+                        {(user?.role === 'superadmin' || user?.role === 'agent') && (
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-text-muted flex items-center gap-1">
                                     <User className="w-3 h-3" /> Asignado Originalmente
@@ -288,7 +288,7 @@ const HistoryPage = () => {
                             ) : (
                                 filteredIncidents.map((incident) => (
                                     <tr key={incident.id} className="hover:bg-background/50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-xs">{incident.ticket_code || `#${incident.id}`}</td>
+                                        <td className="px-6 py-4 font-mono text-xs">{incident.ticketCode || `#${incident.id}`}</td>
                                         <td className="px-6 py-4">
                                             <Link to={`/incidents/${incident.id}`} className="font-medium text-text-main hover:text-primary transition-colors block truncate w-64">
                                                 {incident.title}
@@ -306,7 +306,10 @@ const HistoryPage = () => {
                                                 incident.priority === 'critical' ? 'text-red-500' :
                                                     'text-text-muted'
                                                 }`}>
-                                                {incident.priority}
+                                                {incident.priority === 'low' ? 'BAJA' :
+                                                    incident.priority === 'medium' ? 'MEDIA' :
+                                                        incident.priority === 'high' ? 'ALTA' :
+                                                            incident.priority === 'critical' ? 'CRÍTICA' : incident.priority}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">

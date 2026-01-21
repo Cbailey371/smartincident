@@ -8,6 +8,10 @@ pub mod upload;
 pub mod comment;
 pub mod ticket_type;
 pub mod user;
+<<<<<<< HEAD
+=======
+pub mod dashboard;
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
 pub mod settings;
 
 pub fn api_routes() -> Router<AppState> {
@@ -18,5 +22,9 @@ pub fn api_routes() -> Router<AppState> {
         .nest("/upload", upload::routes())
         .nest("/ticket-types", ticket_type::routes())
         .nest("/users", user::routes())
+<<<<<<< HEAD
+=======
+        .nest("/dashboard", dashboard::routes())
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
         .nest("/settings", settings::routes())
 }

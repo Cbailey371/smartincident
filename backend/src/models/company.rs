@@ -2,7 +2,8 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "Companies")]
+#[serde(rename_all = "camelCase")]
+#[sea_orm(table_name = "companies")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -10,8 +11,8 @@ pub struct Model {
     pub status: String,
     pub address: Option<String>,
     pub contact_email: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

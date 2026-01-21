@@ -39,12 +39,11 @@ const IncidentListPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchIncidents();
         fetchTicketTypes();
-        if (['superadmin', 'company_admin', 'agent'].includes(user?.role)) {
+        if (['superadmin', 'agent'].includes(user?.role)) {
             fetchUsers();
         }
-        if (['superadmin', 'company_admin'].includes(user?.role)) {
+        if (user?.role === 'superadmin') {
             fetchCompanies();
         }
 
@@ -53,6 +52,10 @@ const IncidentListPage = () => {
             setShowModal(true);
         }
     }, [user, location.state]);
+
+    useEffect(() => {
+        fetchIncidents();
+    }, [user, filterStatus, filterPriority, filterAssignee, filterCompany]);
 
     const fetchUsers = async () => {
         try {
@@ -86,7 +89,19 @@ const IncidentListPage = () => {
         try {
             const userInfo = localStorage.getItem('userInfo');
             const token = userInfo ? JSON.parse(userInfo).token : null;
-            const res = await fetch('/api/incidents?status=open,in_progress,resolved', {
+
+            const params = new URLSearchParams();
+            if (filterStatus === 'all') {
+                params.append('status', 'open,in_progress,resolved');
+            } else {
+                params.append('status', filterStatus);
+            }
+            if (filterPriority !== 'all') params.append('priority', filterPriority);
+            if (filterAssignee !== 'all') params.append('assigneeId', filterAssignee);
+            if (filterCompany !== 'all') params.append('companyId', filterCompany);
+            if (searchTerm) params.append('ticketCode', searchTerm);
+
+            const res = await fetch(`/api/incidents?${params.toString()}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -124,12 +139,12 @@ const IncidentListPage = () => {
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('priority', formData.priority);
-        data.append('type_id', formData.type_id);
+        data.append('typeId', parseInt(formData.type_id));
         if (formData.company_id) {
-            data.append('company_id', formData.company_id);
+            data.append('companyId', parseInt(formData.company_id));
         }
         if (selectedFile) {
-            data.append('image', selectedFile);
+            data.append('file', selectedFile);
         }
 
         try {
@@ -190,16 +205,16 @@ const IncidentListPage = () => {
 
     const filteredIncidents = incidents.filter(incident => {
         const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            incident.ticket_code?.toLowerCase().includes(searchTerm.toLowerCase());
+            incident.ticketCode?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = filterStatus === 'all' ? true : incident.status === filterStatus;
         const matchesPriority = filterPriority === 'all' ? true : incident.priority === filterPriority;
 
         // Handle IDs being numbers or objects
-        const assigneeId = incident.assignee_id || incident.assignee?.id;
+        const assigneeId = incident.assigneeId || incident.assignee?.id;
         const matchesAssignee = filterAssignee === 'all' ? true : assigneeId === parseInt(filterAssignee);
 
-        const companyId = incident.company_id || incident.company?.id;
+        const companyId = incident.companyId || incident.company?.id;
         const matchesCompany = filterCompany === 'all' ? true : companyId === parseInt(filterCompany);
 
         let matchesDate = true;
@@ -319,7 +334,7 @@ const IncidentListPage = () => {
                             </select>
                         </div>
 
-                        {(user?.role === 'superadmin' || user?.role === 'company_admin' || user?.role === 'agent') && (
+                        {(user?.role === 'superadmin' || user?.role === 'agent') && (
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-text-muted flex items-center gap-1">
                                     <User className="w-3 h-3" /> Asignado a
@@ -390,7 +405,7 @@ const IncidentListPage = () => {
                             ) : (
                                 filteredIncidents.map((incident) => (
                                     <tr key={incident.id} className="hover:bg-background/50 transition-colors group">
-                                        <td className="px-6 py-4 font-mono text-text-muted">{incident.ticket_code || `#${incident.id}`}</td>
+                                        <td className="px-6 py-4 font-mono text-text-muted">{incident.ticketCode || `#${incident.id}`}</td>
                                         <td className="px-6 py-4">
                                             <Link to={`/incidents/${incident.id}`} className="font-medium text-text-main hover:text-blue-500 transition-colors block truncate w-64">
                                                 {incident.title}
@@ -401,7 +416,10 @@ const IncidentListPage = () => {
                                                 incident.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                                     'bg-background text-text-muted border-border-color'
                                                 }`}>
-                                                {incident.status}
+                                                {incident.status === 'open' ? 'Abierto' :
+                                                    incident.status === 'in_progress' ? 'En Progreso' :
+                                                        incident.status === 'resolved' ? 'Resuelto' :
+                                                            incident.status === 'closed' ? 'Cerrado' : incident.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -409,7 +427,10 @@ const IncidentListPage = () => {
                                                 incident.priority === 'critical' ? 'text-red-500' :
                                                     'text-text-muted'
                                                 }`}>
-                                                {incident.priority}
+                                                {incident.priority === 'low' ? 'BAJA' :
+                                                    incident.priority === 'medium' ? 'MEDIA' :
+                                                        incident.priority === 'high' ? 'ALTA' :
+                                                            incident.priority === 'critical' ? 'CRÍTICA' : incident.priority}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -533,7 +554,7 @@ const IncidentListPage = () => {
                             </div>
 
                             <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium text-text-muted">Upload Screenshot</label>
+                                <label className="text-sm font-medium text-text-muted">Subir Archivo Adjunto</label>
                                 <div
                                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                     onDragLeave={() => setIsDragging(false)}
@@ -552,15 +573,14 @@ const IncidentListPage = () => {
                                         <Upload className="w-6 h-6 text-text-muted" />
                                     </div>
                                     <p className="text-text-main font-medium mb-1">
-                                        {selectedFile ? selectedFile.name : 'Upload a File'}
+                                        {selectedFile ? selectedFile.name : 'Subir un archivo'}
                                     </p>
                                     <p className="text-sm text-text-muted">
-                                        {selectedFile ? 'Click or drag to change' : 'Drag and drop files here'}
+                                        {selectedFile ? 'Haz clic o arrastra para cambiar' : 'Arrastra y suelta archivos aquí'}
                                     </p>
                                     <input
                                         id="file-upload"
                                         type="file"
-                                        accept="image/*"
                                         className="hidden"
                                         onChange={e => setSelectedFile(e.target.files[0])}
                                     />

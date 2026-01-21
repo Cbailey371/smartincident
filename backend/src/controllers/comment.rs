@@ -89,7 +89,11 @@ pub async fn create_comment(
         match fs::write(&save_path, &bytes).await {
             Ok(_) => {
                 let abs_path = std::fs::canonicalize(&save_path).unwrap_or_else(|_| save_path.clone());
+<<<<<<< HEAD
                 tracing::info!("ARCHIVO GUARDADO (COMENTARIO): Escrito en {:?} ({} bytes)", abs_path, bytes_len);
+=======
+                tracing::info!("ARCHIVO GUARDADO: Escrito en {:?} ({} bytes)", abs_path, bytes_len);
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
 
                 let relative_path = format!("uploads/{}", safe_name);
                 let _ = attachment::ActiveModel {
@@ -104,7 +108,11 @@ pub async fn create_comment(
                 }.insert(&state.db).await;
             },
             Err(e) => {
+<<<<<<< HEAD
                 tracing::error!("ERROR AL GUARDAR ARCHIVO (COMENTARIO): {}", e);
+=======
+                tracing::error!("ERROR AL GUARDAR ARCHIVO: {}", e);
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
             }
         }
     }

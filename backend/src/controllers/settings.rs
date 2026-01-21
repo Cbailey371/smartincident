@@ -1,5 +1,9 @@
 use axum::{
+<<<<<<< HEAD
     extract::State,
+=======
+    extract::{State, Path},
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
     http::StatusCode,
     Json,
 };
@@ -27,7 +31,10 @@ pub async fn get_notification_config(
     State(state): State<AppState>,
     user: AuthUser,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+<<<<<<< HEAD
     // Only superadmins and company_admins (read-only) for now
+=======
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
     if !["superadmin", "company_admin"].contains(&user.user.role.as_str()) {
         return Err((StatusCode::FORBIDDEN, Json(json!({"error": "Unauthorized"}))));
     }
@@ -37,7 +44,10 @@ pub async fn get_notification_config(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         .unwrap_or_else(|| {
+<<<<<<< HEAD
             // Return default if not exists
+=======
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
             notification_config::Model {
                 id: 0,
                 smtp_host: "".into(),
@@ -63,7 +73,10 @@ pub async fn get_notification_config(
         "updatedAt": config.updated_at,
     });
 
+<<<<<<< HEAD
     // Mask password if not superadmin
+=======
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
     if user.user.role != "superadmin" {
         val["smtpPass"] = json!("******");
     }
@@ -91,7 +104,10 @@ pub async fn update_notification_config(
             am.smtp_host = Set(payload.smtp_host);
             am.smtp_port = Set(payload.smtp_port);
             am.smtp_user = Set(payload.smtp_user);
+<<<<<<< HEAD
             // Only update password if not masked or dummy
+=======
+>>>>>>> 9967d5e3901e5909bf71176b355afdff65184228
             if payload.smtp_pass != "******" && !payload.smtp_pass.is_empty() {
                 am.smtp_pass = Set(payload.smtp_pass);
             }
