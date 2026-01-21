@@ -1,5 +1,5 @@
 use axum::{
-    routing::{get, put},
+    routing::{get, post, put, delete},
     Router,
 };
 use crate::AppState;

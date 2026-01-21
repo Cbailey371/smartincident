@@ -2,6 +2,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[sea_orm(table_name = "companies")]
 pub struct Model {
     #[sea_orm(primary_key)]

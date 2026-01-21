@@ -56,9 +56,12 @@ pub async fn get_all_incidents(
     }
 
     // Additional filters
-    if let Some(status) = params.status {
-        if status != "all" {
-            query = query.filter(incident::Column::Status.eq(status));
+    if let Some(status_str) = params.status {
+        if status_str != "all" {
+            let statuses: Vec<String> = status_str.split(',').map(|s| s.to_string()).collect();
+            if !statuses.is_empty() {
+                query = query.filter(incident::Column::Status.is_in(statuses));
+            }
         }
     }
 

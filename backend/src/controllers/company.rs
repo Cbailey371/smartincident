@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::models::{company, user, incident};
 use crate::middleware::auth::AuthUser;
-use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{entity::*, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait};
 use chrono::Utc;
 
 pub async fn get_all_companies(
@@ -27,13 +27,13 @@ pub async fn get_all_companies(
     let mut result: Vec<Value> = Vec::new();
 
     for c in companies {
-        let user_count = user::Entity::find()
+        let user_count: u64 = user::Entity::find()
             .filter(user::Column::CompanyId.eq(c.id))
             .count(&state.db)
             .await
             .unwrap_or(0);
 
-        let incident_count = incident::Entity::find()
+        let incident_count: u64 = incident::Entity::find()
             .filter(incident::Column::CompanyId.eq(c.id))
             .count(&state.db)
             .await
