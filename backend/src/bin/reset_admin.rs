@@ -38,7 +38,26 @@ async fn main() {
             println!("Contraseña de {} actualizada correctamente.", email);
         }
         None => {
-            println!("No se encontró el usuario administrador ({}).", email);
+            println!("El usuario administrador no existe. Creándolo con la nueva contraseña...");
+            let hashed = hash(new_password, DEFAULT_COST).expect("Error al hashear la contraseña");
+            
+            let admin = models::user::ActiveModel {
+                name: Set("Super Administrator".into()),
+                email: Set(email.into()),
+                role: Set("superadmin".into()),
+                status: Set("active".into()),
+                password_hash: Set(Some(hashed)),
+                created_at: Set(chrono::Utc::now().into()),
+                updated_at: Set(chrono::Utc::now().into()),
+                ..Default::default()
+            };
+            
+            models::user::Entity::insert(admin)
+                .exec(&db)
+                .await
+                .expect("Error al crear el usuario administrador");
+            
+            println!("Usuario administrador ({}) creado exitosamente.", email);
         }
     }
 }
