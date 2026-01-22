@@ -1,5 +1,5 @@
 use axum::{
-    routing::post,
+    routing::{post, put},
     Router,
 };
 use crate::AppState;
@@ -9,5 +9,5 @@ pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/login", post(auth::login))
         .route("/forgot-password", post(auth::forgot_password))
-        .route("/reset-password", post(auth::reset_password))
+        .route("/reset-password/:token", put(auth::reset_password))
 }

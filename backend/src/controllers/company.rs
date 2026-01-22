@@ -49,6 +49,7 @@ pub async fn get_all_companies(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateCompanyRequest {
     pub name: String,
     pub address: Option<String>,

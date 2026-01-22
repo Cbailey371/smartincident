@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{State, Path},
     http::StatusCode,
     Json,
 };
@@ -15,6 +15,7 @@ use uuid::Uuid;
 use chrono::{Utc, Duration};
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
@@ -66,6 +67,7 @@ pub async fn login(
     }))
 }
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ForgotPasswordRequest {
     pub email: String,
 }
@@ -106,17 +108,18 @@ pub async fn forgot_password(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ResetPasswordRequest {
-    pub token: String,
-    pub new_password: String,
+    pub password: String,
 }
 
 pub async fn reset_password(
     State(state): State<AppState>,
+    Path(token): Path<String>,
     Json(payload): Json<ResetPasswordRequest>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let user = user::Entity::find()
-        .filter(user::Column::ResetToken.eq(payload.token))
+        .filter(user::Column::ResetToken.eq(token))
         .one(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
@@ -128,7 +131,7 @@ pub async fn reset_password(
         }
     }
 
-    let hashed = hash(payload.new_password, DEFAULT_COST)
+    let hashed = hash(payload.password, DEFAULT_COST)
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Hash error"}))))?;
 
     let mut am: user::ActiveModel = user.into();

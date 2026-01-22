@@ -1,0 +1,2 @@
+fn(axum::extract::State<AppState>, {type error}, axum::Json<ResetPasswordRequest>) -> impl std::future::Future<Output = Result<axum::Json<JsonValue>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {reset_password}
+fn(axum::extract::State<AppState>, {type error}, axum::Json<ResetPasswordRequest>) -> impl std::future::Future<Output = Result<axum::Json<JsonValue>, (axum::http::StatusCode, axum::Json<JsonValue>)>> {reset_password}: Handler<_, _>
