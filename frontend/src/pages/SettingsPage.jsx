@@ -315,7 +315,7 @@ const SettingsPage = () => {
                                             const userInfo = localStorage.getItem('userInfo');
                                             const token = userInfo ? JSON.parse(userInfo).token : null;
                                             try {
-                                                await fetch('/api/settings/notifications', {
+                                                const res = await fetch('/api/settings/notifications', {
                                                     method: 'PUT',
                                                     headers: {
                                                         'Content-Type': 'application/json',
@@ -323,9 +323,15 @@ const SettingsPage = () => {
                                                     },
                                                     body: JSON.stringify(updated)
                                                 });
+                                                if (!res.ok) {
+                                                    const errData = await res.json();
+                                                    alert('Error al guardar: ' + (errData.error || 'Error desconocido'));
+                                                    setEmailConfig(emailConfig); // Rollback
+                                                }
                                             } catch (e) {
                                                 console.error(e);
-                                                setEmailConfig(emailConfig); // Rollback on error
+                                                alert('Error de conexión al servidor');
+                                                setEmailConfig(emailConfig); // Rollback on network error
                                             }
                                         }}
                                         className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${emailConfig.isActive ? 'bg-blue-600' : 'bg-gray-600'}`}

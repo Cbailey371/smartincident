@@ -87,20 +87,26 @@ pub async fn update_notification_config(
 
     let model = match existing {
         Some(config) => {
+            tracing::info!("Actualizando configuración de notificaciones existente (ID: {})", config.id);
             let mut am: notification_config::ActiveModel = config.into();
             am.smtp_host = Set(payload.smtp_host);
             am.smtp_port = Set(payload.smtp_port);
             am.smtp_user = Set(payload.smtp_user);
-            // Only update password if not masked or dummy
+            
             if payload.smtp_pass != "******" && !payload.smtp_pass.is_empty() {
                 am.smtp_pass = Set(payload.smtp_pass);
             }
             am.sender_email = Set(payload.sender_email);
             am.is_active = Set(payload.is_active);
             am.updated_at = Set(Utc::now().into());
-            am.update(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
+            
+            am.update(&state.db).await.map_err(|e| {
+                tracing::error!("Error al actualizar configuración: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Error de BD al actualizar: {}", e)})))
+            })?
         },
         None => {
+            tracing::info!("Creando nueva configuración de notificaciones (primer registro)");
             let am = notification_config::ActiveModel {
                 smtp_host: Set(payload.smtp_host),
                 smtp_port: Set(payload.smtp_port),
@@ -110,9 +116,12 @@ pub async fn update_notification_config(
                 is_active: Set(payload.is_active),
                 created_at: Set(Utc::now().into()),
                 updated_at: Set(Utc::now().into()),
-                ..Default::default()
+                id: NotSet, // Dejar que el SERIAL de la BD lo maneje
             };
-            am.insert(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
+            am.insert(&state.db).await.map_err(|e| {
+                tracing::error!("Error al insertar configuración inicial: {:?}", e);
+                (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": format!("Error de BD al insertar: {}", e)})))
+            })?
         }
     };
 
