@@ -9,6 +9,7 @@ use tokio::fs;
 
 pub async fn upload_file(mut multipart: Multipart) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut file_path = String::new();
+    let mut original_name = String::new();
 
     while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({"error": e.to_string()}))))? {
         let name = field.name().unwrap_or("file").to_string();
