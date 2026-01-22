@@ -23,6 +23,7 @@ const UserListPage = () => {
         companyId: '',
         status: 'active'
     });
+    const [autoPassword, setAutoPassword] = useState(!editingUser);
 
     useEffect(() => {
         fetchUsers();
@@ -99,7 +100,13 @@ const UserListPage = () => {
                 ...formData,
                 companyId: formData.companyId ? parseInt(formData.companyId) : null
             };
-            if (editingUser && !payload.password) delete payload.password;
+
+            // If autoPassword is on and it's a new user, send null password to let backend generate it
+            if (!editingUser && autoPassword) {
+                payload.password = null;
+            } else if (editingUser && !payload.password) {
+                delete payload.password;
+            }
 
             const res = await fetch(url, {
                 method,
@@ -178,6 +185,7 @@ const UserListPage = () => {
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingUser(null);
+        setAutoPassword(true);
         setFormData({ name: '', email: '', password: '', role: 'client', companyId: '', status: 'active' });
     };
 
@@ -382,16 +390,33 @@ const UserListPage = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            {!editingUser && (
+                                <div className="flex items-center gap-2 mb-2 p-3 bg-blue-600/5 border border-blue-600/10 rounded-xl">
+                                    <input
+                                        type="checkbox"
+                                        id="autoPassword"
+                                        checked={autoPassword}
+                                        onChange={(e) => setAutoPassword(e.target.checked)}
+                                        className="w-4 h-4 rounded bg-background border-border-color text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="autoPassword" className="text-xs font-semibold text-blue-600 cursor-pointer select-none">
+                                        Generar contraseña automáticamente y enviar por email
+                                    </label>
+                                </div>
+                            )}
+
+                            <div className={`space-y-2 transition-all duration-200 ${(!editingUser && autoPassword) ? 'opacity-50 pointer-events-none grayscale' : 'opacity-100'}`}>
                                 <label className="text-sm font-medium text-text-muted">
                                     Contraseña {editingUser && '(Dejar en blanco para mantener)'}
                                 </label>
                                 <input
                                     type="password"
-                                    required={!editingUser}
+                                    required={!editingUser && !autoPassword}
+                                    disabled={!editingUser && autoPassword}
                                     value={formData.password}
                                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                                     className="w-full bg-background border border-border-color rounded-lg px-4 py-2 text-text-main focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    placeholder={(!editingUser && autoPassword) ? 'Se generará automáticamente' : '********'}
                                 />
                             </div>
 
