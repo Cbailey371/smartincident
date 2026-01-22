@@ -36,6 +36,7 @@ pub async fn get_all_users(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateUserRequest {
     pub name: String,
     pub email: String,
