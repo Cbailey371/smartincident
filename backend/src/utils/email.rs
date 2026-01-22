@@ -34,7 +34,7 @@ impl EmailService {
             .build();
 
             let email = Message::builder()
-                .from(format!("Tickets SaaS <{}>", cfg.sender_email).parse()?)
+                .from(format!("SmartIncident <{}>", cfg.sender_email).parse()?)
                 .to(to.parse()?)
                 .subject(subject)
                 .header(lettre::message::header::ContentType::TEXT_HTML)
