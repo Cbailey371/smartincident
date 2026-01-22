@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
 const Layout = () => {
     const location = useLocation();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const getTitle = () => {
         switch (location.pathname) {
@@ -17,12 +19,23 @@ const Layout = () => {
         }
     };
 
+    const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
     return (
-        <div className="flex bg-background h-screen font-sans overflow-hidden">
-            <Sidebar />
+        <div className="flex bg-background h-screen font-sans overflow-hidden relative">
+            {/* Sidebar Overlay for Mobile */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden transition-opacity"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header title={getTitle()} />
-                <main className="flex-1 overflow-auto p-8 bg-black/20 flex flex-col">
+                <Header title={getTitle()} onMenuClick={toggleSidebar} />
+                <main className="flex-1 overflow-auto p-4 md:p-8 bg-black/20 flex flex-col">
                     <div className="flex-1">
                         <Outlet />
                     </div>

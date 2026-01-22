@@ -1,8 +1,8 @@
-import { LayoutDashboard, Ticket, Settings, BarChart3, Building2, Users, LogOut, History } from 'lucide-react';
+import { LayoutDashboard, Ticket, Settings, Building2, Users, LogOut, History, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
 
     const allNavItems = [
@@ -17,16 +17,22 @@ const Sidebar = () => {
     const navItems = allNavItems.filter(item => item.roles.includes(user?.role));
 
     return (
-        <div className="w-64 h-screen bg-surface border-r border-border-color flex flex-col p-4 text-text-muted">
-            <div className="flex items-center gap-3 px-4 py-6 mb-4 justify-center">
-                <img src="/logo.png" alt="SMARTINCIDENT" className="h-44 object-contain" />
+        <div className={`fixed inset-y-0 left-0 z-[70] w-64 bg-surface border-r border-border-color flex flex-col p-4 text-text-muted transition-transform duration-300 lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="flex items-center justify-between lg:justify-center gap-3 px-4 py-6 mb-4">
+                <img src="/logo.png" alt="SMARTINCIDENT" className="h-16 lg:h-44 object-contain" />
+                <button onClick={onClose} className="lg:hidden p-2 text-text-muted hover:text-text-main">
+                    <X className="w-6 h-6" />
+                </button>
             </div>
 
-            <nav className="flex-1 space-y-2">
+            <nav className="flex-1 space-y-2 overflow-y-auto">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={() => {
+                            if (window.innerWidth < 1024) onClose();
+                        }}
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                 ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]'
@@ -35,7 +41,7 @@ const Sidebar = () => {
                         }
                     >
                         <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                        <span className="font-medium">{item.label}</span>
+                        <span className="font-medium text-sm lg:text-base">{item.label}</span>
                     </NavLink>
                 ))}
             </nav>
@@ -43,12 +49,12 @@ const Sidebar = () => {
             <div className="mt-auto px-4 py-4 border-t border-border-color">
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-background border border-border-color flex items-center justify-center text-sm font-bold text-text-muted">
+                        <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-background border border-border-color flex items-center justify-center text-xs lg:text-sm font-bold text-text-muted">
                             {user?.name?.charAt(0) || 'U'}
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-text-main">{user?.name || 'Usuario'}</span>
-                            <span className="text-xs text-text-muted capitalize">
+                        <div className="flex flex-col max-w-[100px] lg:max-w-none">
+                            <span className="text-xs lg:text-sm font-semibold text-text-main truncate">{user?.name || 'Usuario'}</span>
+                            <span className="text-[10px] lg:text-xs text-text-muted capitalize">
                                 {user?.role === 'agent' ? 'Agente' :
                                     user?.role === 'superadmin' ? 'Administrador' : 'Cliente'}
                             </span>
