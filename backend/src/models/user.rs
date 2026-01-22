@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[sea_orm(table_name = "users")]
+#[sea_orm(table_name = "Users")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -16,7 +16,9 @@ pub struct Model {
     pub reset_token: Option<String>,
     pub reset_token_expiry: Option<DateTimeWithTimeZone>,
     pub company_id: Option<i32>,
+    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTimeWithTimeZone,
+    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTimeWithTimeZone,
 }
 

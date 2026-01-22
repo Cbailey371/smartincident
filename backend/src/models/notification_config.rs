@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[sea_orm(table_name = "notification_configs")]
+#[sea_orm(table_name = "NotificationConfigs")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -13,7 +13,9 @@ pub struct Model {
     pub smtp_pass: String,
     pub sender_email: String,
     pub is_active: bool,
+    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTimeWithTimeZone,
+    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTimeWithTimeZone,
 }
 

@@ -3,14 +3,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[sea_orm(table_name = "comments")]
+#[sea_orm(table_name = "Comments")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub content: String,
     pub incident_id: i32,
+    #[sea_orm(column_name = "user_id")]
     pub author_id: i32,
+    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTimeWithTimeZone,
+    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTimeWithTimeZone,
 }
 
