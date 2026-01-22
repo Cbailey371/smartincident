@@ -85,7 +85,7 @@ pub async fn update_notification_config(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
 
-    let am = match existing {
+    let model = match existing {
         Some(config) => {
             let mut am: notification_config::ActiveModel = config.into();
             am.smtp_host = Set(payload.smtp_host);
@@ -98,26 +98,25 @@ pub async fn update_notification_config(
             am.sender_email = Set(payload.sender_email);
             am.is_active = Set(payload.is_active);
             am.updated_at = Set(Utc::now().into());
-            am
+            am.update(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         },
-        None => notification_config::ActiveModel {
-            smtp_host: Set(payload.smtp_host),
-            smtp_port: Set(payload.smtp_port),
-            smtp_user: Set(payload.smtp_user),
-            smtp_pass: Set(payload.smtp_pass),
-            sender_email: Set(payload.sender_email),
-            is_active: Set(payload.is_active),
-            created_at: Set(Utc::now().into()),
-            updated_at: Set(Utc::now().into()),
-            ..Default::default()
+        None => {
+            let am = notification_config::ActiveModel {
+                smtp_host: Set(payload.smtp_host),
+                smtp_port: Set(payload.smtp_port),
+                smtp_user: Set(payload.smtp_user),
+                smtp_pass: Set(payload.smtp_pass),
+                sender_email: Set(payload.sender_email),
+                is_active: Set(payload.is_active),
+                created_at: Set(Utc::now().into()),
+                updated_at: Set(Utc::now().into()),
+                ..Default::default()
+            };
+            am.insert(&state.db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?
         }
     };
 
-    let result = am.save(&state.db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
-
-    Ok(Json(result.try_into_model().unwrap()))
+    Ok(Json(model))
 }
 
 #[derive(Deserialize)]
