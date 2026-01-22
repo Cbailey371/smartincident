@@ -276,18 +276,21 @@ const IncidentDetailPage = () => {
                                     <div key={att.id} className="group relative">
                                         {isImage ? (
                                             <div
-                                                onClick={() => setPreviewImage(`/api/${att.filePath.replace(/\\/g, '/')}`)}
+                                                onClick={() => {
+                                                    const path = att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`;
+                                                    setPreviewImage(path.replace(/\\/g, '/'));
+                                                }}
                                                 className="cursor-pointer transition-transform hover:scale-105"
                                             >
                                                 <img
-                                                    src={`/api/${att.filePath.replace(/\\/g, '/')}`}
+                                                    src={(att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`).replace(/\\/g, '/')}
                                                     alt={att.originalName}
                                                     className="w-24 h-24 object-cover rounded-lg border border-border-color shadow-sm group-hover:shadow-md"
                                                 />
                                             </div>
                                         ) : (
                                             <a
-                                                href={`/api/${encodeURI(att.filePath.replace(/\\/g, '/'))}`}
+                                                href={encodeURI((att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`).replace(/\\/g, '/'))}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 download={att.originalName}
@@ -435,18 +438,21 @@ const IncidentDetailPage = () => {
                                                             <div key={att.id}>
                                                                 {isImage ? (
                                                                     <div
-                                                                        onClick={() => setPreviewImage(`/api/${att.filePath.replace(/\\/g, '/')}`)}
+                                                                        onClick={() => {
+                                                                            const path = att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`;
+                                                                            setPreviewImage(path.replace(/\\/g, '/'));
+                                                                        }}
                                                                         className="cursor-pointer group"
                                                                     >
                                                                         <img
-                                                                            src={`/api/${att.filePath.replace(/\\/g, '/')}`}
+                                                                            src={(att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`).replace(/\\/g, '/')}
                                                                             alt={att.originalName}
                                                                             className="w-full h-24 object-cover rounded-lg border border-border-color group-hover:opacity-90 transition-opacity"
                                                                         />
                                                                     </div>
                                                                 ) : (
                                                                     <a
-                                                                        href={`/api/${encodeURI(att.filePath.replace(/\\/g, '/'))}`}
+                                                                        href={encodeURI((att.filePath.startsWith('/api') ? att.filePath : `/api${att.filePath}`).replace(/\\/g, '/'))}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         download={att.originalName}
