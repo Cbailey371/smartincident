@@ -1,0 +1,14 @@
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/deps/thiserror-3116d899a223cb91.d: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/build/thiserror-3de24113c52611be/out/private.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/deps/libthiserror-3116d899a223cb91.rlib: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/build/thiserror-3de24113c52611be/out/private.rs
+
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/deps/libthiserror-3116d899a223cb91.rmeta: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs /Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/build/thiserror-3de24113c52611be/out/private.rs
+
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/lib.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/aserror.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/display.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/var.rs:
+/Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/thiserror-2.0.18/src/private.rs:
+/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/build/thiserror-3de24113c52611be/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/cbailey/Documents/Proyectos/tusociosmart/backend/target/debug/build/thiserror-3de24113c52611be/out
