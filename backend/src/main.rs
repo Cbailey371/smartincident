@@ -54,7 +54,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "tusociosmart API (Rust Edition)" }))
         .nest("/api", routes::api_routes())
-        .nest_service("/uploads", ServeDir::new("uploads"))
+        .nest_service("/api/uploads", ServeDir::new("uploads"))
         .layer(layer)
         .layer(cors)
         .layer(axum::extract::DefaultBodyLimit::max(50 * 1024 * 1024)) // 50MB

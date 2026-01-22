@@ -25,7 +25,8 @@ pub async fn upload_file(mut multipart: Multipart) -> Result<Json<Value>, (Statu
             let path = Path::new(upload_dir).join(&safe_file_name);
             
             fs::write(&path, data).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": e.to_string()}))))?;
-            file_path = format!("/uploads/{}", safe_file_name);
+            file_path = format!("/api/uploads/{}", safe_file_name); // Changed to include /api/
+            original_name = file_name; // Store the original file name
         }
     }
 
@@ -33,5 +34,9 @@ pub async fn upload_file(mut multipart: Multipart) -> Result<Json<Value>, (Statu
         return Err((StatusCode::BAD_REQUEST, Json(json!({"error": "No file uploaded"}))));
     }
 
-    Ok(Json(json!({ "url": file_path })))
+    Ok(Json(json!({ 
+        "status": "success",
+        "filePath": file_path, // Use the path with /api/ prefix
+        "originalName": original_name // Include original name
+    })))
 }
