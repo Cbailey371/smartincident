@@ -1,0 +1,293 @@
+# Guía de Implementación: Proyecto tusociosmart (Ubuntu)
+
+Esta guía detalla el proceso completo para desplegar la aplicación **tusociosmart** en un servidor Ubuntu (22.04 LTS o superior). El proyecto consta de un backend de alto rendimiento en **Rust (Axum)** y un frontend moderno en **React (Vite)**.
+
+## 📋 Requisitos Previos
+
+- **Servidor VPS:** Ubuntu 22.04 LTS.
+- **Recursos Mínimos:** 1 vCPU, 1 GB RAM (con Swap configurado). Recomendado: 2 vCPU, 2 GB RAM.
+- **Dominio:** Un dominio apuntando a la IP del servidor (ej. `app.tusociosmart.com`).
+- **Usuario:** Acceso root o usuario con privilegios `sudo`.
+
+---
+
+## 1. Estructura del Sistema
+
+Antes de comenzar, es importante entender cómo quedará organizado el servidor:
+
+```
+/var/www/tusociosmart/
+├── backend/                  # Código fuente del Backend (Rust)
+│   ├── target/release/       # Binario compilado
+│   ├── uploads/              # Archivos subidos por usuarios
+│   └── .env                  # Variables de entorno (Secretos)
+└── frontend/                 # Código fuente del Frontend (React)
+    └── dist/                 # Archivos estáticos copilados para producción
+```
+
+- **Puerto Backend:** `5002` (Interno, no expuesto directamente)
+- **Puerto Frontend:** `80/443` (Expuesto vía Nginx)
+- **Base de Datos:** PostgreSQL
+
+---
+
+## 2. Preparación del Entorno
+
+### 2.1 Actualización y Dependencias Base
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl git build-essential pkg-config libssl-dev nginx postgresql postgresql-contrib
+```
+
+### 2.2 Configurar Swap (Crítico para servidores de 1GB RAM)
+La compilación de Rust y Node.js puede consumir mucha memoria.
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+---
+
+## 3. Instalación de Lenguajes
+
+### 3.1 Rust (Para el Backend)
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Presiona 1 para la instalación por defecto
+source "$HOME/.cargo/env"
+```
+
+### 3.2 Node.js v20 (Para construir el Frontend)
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+---
+
+## 4. Configuración de Base de Datos
+
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+sudo -u postgres psql
+```
+
+Dentro de la consola de PostgreSQL:
+
+```sql
+CREATE DATABASE tusociosmart_db;
+CREATE USER smartuser WITH PASSWORD 'TU_CONTRASEÑA_SEGURA';
+GRANT ALL PRIVILEGES ON DATABASE tusociosmart_db TO smartuser;
+-- Asegurar permisos en el esquema publico (para versiones nuevas de PG)
+\c tusociosmart_db
+GRANT ALL ON SCHEMA public TO smartuser;
+\q
+```
+
+---
+
+## 5. Despliegue del Backend (Rust)
+
+### 5.1 Clonar y Configurar
+
+```bash
+sudo mkdir -p /var/www/tusociosmart
+sudo chown -R $USER:$USER /var/www/tusociosmart
+cd /var/www/tusociosmart
+
+# Clona tu repositorio (Asegúrate de usar la URL correcta de tu repo)
+git clone https://github.com/TU_USUARIO/tusociosmart.git .
+
+cd backend
+```
+
+### 5.2 Variables de Entorno (.env)
+
+Crea el archivo `.env`:
+
+```bash
+nano .env
+```
+
+Contenido:
+```env
+DATABASE_URL=postgres://smartuser:TU_CONTRASEÑA_SEGURA@localhost/tusociosmart_db
+JWT_SECRET=GENERA_UN_SECRET_LARGO_AQUI_CON_OPENSSL
+RUST_LOG=info
+PORT=5002
+```
+*(Puedes generar un secreto con `openssl rand -base64 32`)*
+
+### 5.3 Compilación
+
+```bash
+cargo build --release
+```
+*Este paso puede tardar varios minutos la primera vez.*
+
+### 5.4 Crear Servicio Systemd
+
+Para asegurar que el backend se ejecute siempre y se reinicie automáticamente.
+
+```bash
+sudo nano /etc/systemd/system/tusociosmart-backend.service
+```
+
+Contenido:
+```ini
+[Unit]
+Description=Backend Rust Tusociosmart
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/var/www/tusociosmart/backend
+ExecStart=/var/www/tusociosmart/backend/target/release/smartincident-backend-rust
+Restart=always
+# Cargar variables de entorno desde el archivo .env es posible, 
+# pero systemd prefiere EnvironmentFile o definirlas aquí. 
+# Usaremos EnvironmentFile si tienes soporte, o carga directa.
+# Lo más robusto en Rust con dotenvy es que el binario lea el .env del WorkDir.
+
+[Install]
+WantedBy=multi-user.target
+```
+*Nota: Asegúrate de que `User=ubuntu` coincida con tu usuario real (ej. `root` o `ubuntu`).*
+
+Activar el servicio:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable tusociosmart-backend
+sudo systemctl start tusociosmart-backend
+```
+
+Verificar estado: `sudo systemctl status tusociosmart-backend`
+
+---
+
+## 6. Despliegue del Frontend (React/Vite)
+
+### 6.1 Instalación y Build
+
+```bash
+cd /var/www/tusociosmart/frontend
+
+# Instalar dependencias
+npm install
+
+# Construir para producción
+npm run build
+```
+
+Esto generará la carpeta `/var/www/tusociosmart/frontend/dist` con los archivos estáticos.
+
+---
+
+## 7. Configuración de Nginx (Proxy Inverso)
+
+Configuraremos Nginx para servir el frontend y redirigir las peticiones `/api` al backend.
+
+```bash
+sudo nano /etc/nginx/sites-available/tusociosmart
+```
+
+Contenido:
+```nginx
+server {
+    listen 80;
+    server_name midominio.com; # REEMPLAZAR CON TU DOMINIO
+
+    root /var/www/tusociosmart/frontend/dist;
+    index index.html;
+
+    # Configuración para soportar React Router (SPA)
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy reverso para la API
+    location /api/ {
+        proxy_pass http://localhost:5002/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Aumentar tamaño máximo de upload si es necesario
+        client_max_body_size 50M;
+    }
+
+    # Proxy reverso para Socket.io (si se usa)
+    location /socket.io/ {
+        proxy_pass http://localhost:5002/socket.io/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+
+    # Archivos estáticos subidos (imágenes, adjuntos)
+    location /api/uploads/ {
+        alias /var/www/tusociosmart/backend/uploads/;
+    }
+}
+```
+
+Activar el sitio:
+```bash
+sudo ln -s /etc/nginx/sites-available/tusociosmart /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+---
+
+## 8. Seguridad HTTPS (Certbot)
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d midominio.com
+```
+
+Sigue las instrucciones para redirigir todo el tráfico a HTTPS.
+
+---
+
+## 9. Firewall (UFW)
+
+```bash
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+```
+
+## 10. Mantenimiento y Actualizaciones
+
+Para actualizar el sistema en el futuro:
+
+**Backend:**
+```bash
+cd /var/www/tusociosmart/backend
+git pull
+cargo build --release
+sudo systemctl restart tusociosmart-backend
+```
+
+**Frontend:**
+```bash
+cd /var/www/tusociosmart/frontend
+git pull
+npm install
+npm run build
+# No es necesario reiniciar Nginx para cambios estáticos
+```
